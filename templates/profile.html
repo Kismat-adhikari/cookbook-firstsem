@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+
+    <div class="settings-container">
+        <h1>Account Settings</h1>
+        <form method="POST" action="/profile">
+            <div class="setting-group">
+                <label for="username"><i id="icon" class="fa-regular fa-user"></i> Username:</label>
+                <div class="name-group">
+                    <input type="text" id="first_name" name="first_name" value="{{ first_name }}" readonly>
+                    <input type="text" id="last_name" name="last_name" value="{{ last_name }}" readonly>
+                </div>
+            </div>
+    
+            <div class="setting-group">
+                <label for="nickname"><i id="icon" class="fa-solid fa-signature"></i> Nickname:</label>
+                <input type="text" id="nickname" name="nickname" value="{{ nickname }}" readonly>
+            </div>
+    
+            <div class="setting-group">
+                <label for="phone"><i id="icon" class="fa fa-phone" aria-hidden="true"></i> Phone-number:</label>
+                <input type="tel" id="phone" name="phone" value="{{ phone }}" readonly>
+            </div>
+    
+            <div class="setting-group">
+                <label for="email"><i id="icon" class="fa-regular fa-envelope"></i> Email:</label>
+                <input type="email" id="email" name="email" value="{{ email }}" readonly>
+            </div>
+    
+            <div class="setting-group">
+                <label for="cook_type"><i id="icon" class="fa-solid fa-kitchen-set"></i> Skill:</label>
+                <select id="cook_type" name="cook_type" disabled>
+                    <option value="{{ cook_type }}" selected>{{ cook_type }}</option>
+                    <option value="Home Chef">Home Chef</option>
+                    <option value="Professional Chef">Professional Chef</option>
+                    <option value="Baker">Baker</option>
+                    <option value="Food Enthusiast">Food Enthusiast</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+    
+            <div class="setting-group">
+                <label for="experience"><i id="icon" class="fa-solid fa-arrow-up-right-dots"></i> Experience:</label>
+                <select id="experience" name="experience" disabled>
+                    <option value="{{ experience }}" selected>{{ experience }}</option>
+                    <option value="<1 year">Less than a year</option>
+                    <option value="1-2 years">1-2 years</option>
+                    <option value="2-3 years">2-3 years</option>
+                    <option value="3-5 years">3-5 years</option>
+                    <option value="5-10 years">5-10 years</option>
+                    <option value="10-20 years">10-20 years</option>
+                </select>
+            </div>
+    
+            <!-- Edit/Save button -->
+            <button type="button" id="editButton">Edit</button>
+            <button type="submit" id="saveButton" style="display:none;">Save Changes</button>
+        </form>
+        </div>
+    
+    
+</body>
+</html>
