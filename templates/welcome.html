@@ -5,10 +5,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Share Your Recipe</title>
+    <link rel="stylesheet" href="/static/css/welcome.css">
+    <link rel="stylesheet" href="/static/css/navbar.css">
    
 </head>
 
 <body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="Logo">
+        </div>
+
+        <!-- Hamburger Icon -->
+        <div class="hamburger" onclick="toggleNavbar()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <div class="nav-links">
+            <a href="welcome">Home</a>
+            <a href="users">Cooks</a>
+            <a href="profile">Profile</a>
+            <a href="explore">Explore</a>
+        </div>
+
+        <div class="logout">
+            <button>Logout</button>
+        </div>
+    </nav>
+
+
+
+
+<!-- TEMPORARAY INTERFACE -->
     <div class="container">
         <!-- Form Section (EXAMPLE)-->
         <section class="form-section">
@@ -47,6 +79,10 @@
 
       
     </div>
+
+
+<!-- for navbar simple js code -->
+    <script src="/static/js/navbar.js"></script>
 </body>
 
 </html>
