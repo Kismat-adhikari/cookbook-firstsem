@@ -1,46 +1,101 @@
 import tkinter as tk
+from tkinter import ttk
 
-def show_signup():
-    login_frame.pack_forget()
-    signup_frame.pack(pady=20)
+def switch_to_signup():
+    for widget in main_frame.winfo_children():
+        widget.destroy()
 
-def show_login():
-    signup_frame.pack_forget()
-    login_frame.pack(pady=20)
+    # Full Name
+    tk.Label(main_frame, text="Full Name", font=("Arial", 12)).grid(row=0, column=0, padx=10, pady=10, sticky="w")
+    fullname_entry = tk.Entry(main_frame)
+    fullname_entry.grid(row=0, column=1, padx=10, pady=10)
 
-def signup():
-    show_login()
+    # Username
+    tk.Label(main_frame, text="Username", font=("Arial", 12)).grid(row=1, column=0, padx=10, pady=10, sticky="w")
+    username_entry = tk.Entry(main_frame)
+    username_entry.grid(row=1, column=1, padx=10, pady=10)
 
-def login():
-    pass
+    # Age (number only)
+    tk.Label(main_frame, text="Age", font=("Arial", 12)).grid(row=2, column=0, padx=10, pady=10, sticky="w")
+    age_entry = tk.Entry(main_frame)
+    age_entry.grid(row=2, column=1, padx=10, pady=10)
 
+    # Phone number (number only)
+    tk.Label(main_frame, text="Phone", font=("Arial", 12)).grid(row=3, column=0, padx=10, pady=10, sticky="w")
+    phone_entry = tk.Entry(main_frame)
+    phone_entry.grid(row=3, column=1, padx=10, pady=10)
+
+    # Experience (dropdown - number only)
+    tk.Label(main_frame, text="Experience (years)", font=("Arial", 12)).grid(row=4, column=0, padx=10, pady=10, sticky="w")
+    experience = tk.StringVar(main_frame)
+    experience_dropdown = ttk.Combobox(main_frame, textvariable=experience, state="readonly")
+    experience_dropdown['values'] = [str(i) for i in range(1, 51)]  # Up to 50 years experience
+    experience_dropdown.grid(row=4, column=1, padx=10, pady=10)
+
+    # Cook Type (dropdown)
+    tk.Label(main_frame, text="Cook Type", font=("Arial", 12)).grid(row=5, column=0, padx=10, pady=10, sticky="w")
+    cook_type = tk.StringVar(main_frame)
+    cook_type_dropdown = ttk.Combobox(main_frame, textvariable=cook_type, state="readonly")
+    cook_type_dropdown['values'] = ['Vegetarian', 'Non-Vegetarian', 'Vegan', 'Dessert Specialist']
+    cook_type_dropdown.grid(row=5, column=1, padx=10, pady=10)
+
+    # Password
+    tk.Label(main_frame, text="Password", font=("Arial", 12)).grid(row=6, column=0, padx=10, pady=10, sticky="w")
+    password_entry = tk.Entry(main_frame, show="*")
+    password_entry.grid(row=6, column=1, padx=10, pady=10)
+
+    # Confirm Password
+    tk.Label(main_frame, text="Confirm Password", font=("Arial", 12)).grid(row=7, column=0, padx=10, pady=10, sticky="w")
+    confirm_password_entry = tk.Entry(main_frame, show="*")
+    confirm_password_entry.grid(row=7, column=1, padx=10, pady=10)
+
+    # Signup button
+    signup_button = tk.Button(main_frame, text="Sign Up", font=("Arial", 12), bg="#4CAF50", fg="white", width=15)
+    signup_button.grid(row=8, columnspan=2, pady=20)
+
+    # Switch to Login button
+    switch_to_login_button = tk.Button(main_frame, text="Back to Login", font=("Arial", 10), command=switch_to_login)
+    switch_to_login_button.grid(row=9, columnspan=2, pady=5)
+
+def switch_to_login():
+    for widget in main_frame.winfo_children():
+        widget.destroy()
+
+    # Centering content
+    main_frame.grid_rowconfigure(0, weight=1)
+    main_frame.grid_rowconfigure(3, weight=1)
+    main_frame.grid_columnconfigure(0, weight=1)
+    main_frame.grid_columnconfigure(1, weight=1)
+
+    # Username or Email
+    tk.Label(main_frame, text="Username or Email", font=("Arial", 12)).grid(row=1, column=0, padx=10, pady=10, sticky="e")
+    username_email_entry = tk.Entry(main_frame)
+    username_email_entry.grid(row=1, column=1, padx=10, pady=10)
+
+    # Password
+    tk.Label(main_frame, text="Password", font=("Arial", 12)).grid(row=2, column=0, padx=10, pady=10, sticky="e")
+    password_entry = tk.Entry(main_frame, show="*")
+    password_entry.grid(row=2, column=1, padx=10, pady=10)
+
+    # Login button
+    login_button = tk.Button(main_frame, text="Login", font=("Arial", 12), bg="#4CAF50", fg="white", width=15)
+    login_button.grid(row=3, columnspan=2, pady=20)
+
+    # Switch to Signup button
+    signup_button = tk.Button(main_frame, text="Sign Up", font=("Arial", 10), command=switch_to_signup)
+    signup_button.grid(row=4, columnspan=2, pady=5)
+
+# Main window setup
 root = tk.Tk()
-root.title("Login & Signup")
-root.geometry("300x300")
+root.title("Login and Signup")
 
-# Signup Section
-signup_frame = tk.Frame(root, padx=20, pady=20)
-tk.Label(signup_frame, text="Signup", font=("Arial", 14, "bold")).pack(pady=5)
-entry_signup_user = tk.Entry(signup_frame, width=25)
-entry_signup_user.pack(pady=5)
-entry_signup_pass = tk.Entry(signup_frame, show="*", width=25)
-entry_signup_pass.pack(pady=5)
-tk.Button(signup_frame, text="Signup", command=signup, bg="#4CAF50", fg="white").pack(pady=10)
-signup_link = tk.Label(signup_frame, text="Go to Login", fg="blue", cursor="hand2", font=("Arial", 10, "underline"))
-signup_link.pack()
-signup_link.bind("<Button-1>", lambda e: show_login())
+# Set window size to fit both forms perfectly
+root.geometry("400x500")  # Adjusted size
 
-# Login Section
-login_frame = tk.Frame(root, padx=20, pady=20)
-tk.Label(login_frame, text="Login", font=("Arial", 14, "bold")).pack(pady=5)
-entry_login_user = tk.Entry(login_frame, width=25)
-entry_login_user.pack(pady=5)
-entry_login_pass = tk.Entry(login_frame, show="*", width=25)
-entry_login_pass.pack(pady=5)
-tk.Button(login_frame, text="Login", command=login, bg="#008CBA", fg="white").pack(pady=10)
-login_link = tk.Label(login_frame, text="Go to Signup", fg="blue", cursor="hand2", font=("Arial", 10, "underline"))
-login_link.pack()
-login_link.bind("<Button-1>", lambda e: show_signup())
+main_frame = tk.Frame(root)
+main_frame.pack(expand=True, fill="both", padx=20, pady=20)
 
-login_frame.pack(pady=20)
+# Start with the login screen
+switch_to_login()
+
 root.mainloop()
