@@ -1,5 +1,22 @@
 import tkinter as tk
 from tkinter import ttk
+import mysql.connector
+from mysql.connector import Error
+
+# Connect to MySQL  
+def connect():
+    try:
+        connection=mysql.connector.connect(
+            host='localhost',
+            database='cookbook',      
+            user='root', 
+            password='password123' 
+            )
+        if connection.is_connected():
+            print("connected!")
+            return connection
+    except Error as e:
+        print("ERROR: \n", e)
 
 def switch_to_signup():
     for widget in main_frame.winfo_children():
@@ -9,6 +26,7 @@ def switch_to_signup():
     tk.Label(main_frame, text="Full Name", font=("Arial", 12)).grid(row=0, column=0, padx=10, pady=10, sticky="w")
     fullname_entry = tk.Entry(main_frame)
     fullname_entry.grid(row=0, column=1, padx=10, pady=10)
+    print(fullname_entry)
 
     # Username
     tk.Label(main_frame, text="Username", font=("Arial", 12)).grid(row=1, column=0, padx=10, pady=10, sticky="w")
