@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 import mysql.connector
 from mysql.connector import Error
+#import os to connect to other files
+import os 
 
 # Connect to MySQL  
 def connect():
@@ -23,6 +25,8 @@ def store_data(fullname_entry,username_entry, email_entry,age_entry,phone_entry,
     cursor = connection.cursor()
     cursor.execute("INSERT INTO profile (name, username, email, age, phone_number, experience, cook_type, password) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (fullname_entry.get(), username_entry.get(), email_entry.get(), age_entry.get(), phone_entry.get(), experience.get(), cook_type.get(), password_entry.get()))
     connection.commit()
+    connection.close()
+    os.system(f'python user_profile.py {fullname_entry.get()}')
 
 def switch_to_signup():
     for widget in main_frame.winfo_children():
@@ -76,10 +80,6 @@ def switch_to_signup():
     tk.Label(main_frame, text="Confirm Password", font=("Arial", 12)).grid(row=8, column=0, padx=10, pady=10, sticky="w")
     confirm_password_entry = tk.Entry(main_frame, show="*")
     confirm_password_entry.grid(row=8, column=1, padx=10, pady=10)
-
-    button_thing = tk.Button(main_frame, text="button", command=connect)
-    button_thing.grid(row=9, columnspan=2, pady=20)
-
 
     # Signup button
     signup_button = tk.Button(main_frame, text="Sign Up", command=lambda: store_data(fullname_entry, username_entry, email_entry, age_entry, phone_entry, experience, cook_type, password_entry), font=("Arial", 12), bg="#4CAF50", fg="white", width=15)

@@ -3,6 +3,7 @@ from tkinter import messagebox
 import mysql.connector
 from mysql.connector import Error
 from PIL import Image, ImageTk
+import sys
 
 # Connect to MySQL database
 def connect():
@@ -19,8 +20,10 @@ def connect():
 def display_profile(username):
     connection = connect()
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM profile WHERE username = %s", (username,))
+    print(username)
+    cursor.execute("SELECT * FROM profile WHERE name = %s", (username,))
     user = cursor.fetchone()
+    print(user)
     if user:
         user_id= user[0]
         name = user[1]
@@ -54,7 +57,7 @@ label_email.pack(fill="x", pady=10)
 
 
 def reload_profile():
-    display_profile('nirdesh')
+    display_profile(str(sys.argv[1]))
 
 
 # Load and resize the reload icon
@@ -66,7 +69,7 @@ reload_icon = ImageTk.PhotoImage(reload_image)
 btn_reload = tk.Button(root, image=reload_icon, command=reload_profile, bd=0, highlightthickness=0)
 btn_reload.place(x=20, y=20)
 
-display_profile('nirdesh')
+display_profile(str(sys.argv[1]))
 
 root.geometry('800x800')
 root.mainloop()
