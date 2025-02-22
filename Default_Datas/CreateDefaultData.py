@@ -22,7 +22,10 @@ def connection_create():
                             email VARCHAR(100) NOT NULL,
                             age INT NOT NULL,
                             cook_type VARCHAR(50),
-                            experience int)''')
+                            experience int,
+                            profile_pic LONGBLOB,
+                            bio TEXT
+                            )''')
     except Error as e:
         print("ERROR: \n", e)   
 connection_create()
