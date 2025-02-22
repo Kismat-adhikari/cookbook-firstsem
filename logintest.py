@@ -26,7 +26,12 @@ def store_data(fullname_entry,username_entry, email_entry,age_entry,phone_entry,
     cursor.execute("INSERT INTO profile (name, username, email, age, phone_number, experience, cook_type, password) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (fullname_entry.get(), username_entry.get(), email_entry.get(), age_entry.get(), phone_entry.get(), experience.get(), cook_type.get(), password_entry.get()))
     connection.commit()
     connection.close()
-    os.system(f'python user_profile.py {fullname_entry.get()}')
+    name=fullname_entry.get()
+    root.destroy() 
+    goto_profile(name)
+    
+def goto_profile(name):
+    os.system(f'python user_profile.py {name}')
 
 def switch_to_signup():
     for widget in main_frame.winfo_children():
@@ -117,11 +122,13 @@ def switch_to_login():
     signup_button = tk.Button(main_frame, text="Sign Up", font=("Arial", 10), command=switch_to_signup)
     signup_button.grid(row=4, columnspan=2, pady=5)
 
+
 # Main window setup
 root = tk.Tk()
 root.title("Login and Signup")
 
 # Set window size to fit both forms perfectly
+root.state("zoomed")  # Fullscreen
 root.geometry("400x600")  # Adjusted size
 
 main_frame = tk.Frame(root)
