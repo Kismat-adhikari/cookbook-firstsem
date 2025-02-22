@@ -18,6 +18,12 @@ def connect():
     except Error as e:
         print("ERROR: \n", e)
 
+def store_data(fullname_entry,username_entry,age_entry,phone_entry,experience,cook_type,password_entry):
+    connection = connect()
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO profile (name, username, birth_date, phone_number, experience, cook_type, password) VALUES (%s, %s, %s, %s, %s, %s, %s)", (fullname_entry.get(), username_entry.get(), age_entry.get(), phone_entry.get(), experience.get(), cook_type.get(), password_entry.get()))
+    connection.commit()
+
 def switch_to_signup():
     for widget in main_frame.winfo_children():
         widget.destroy()
@@ -26,7 +32,6 @@ def switch_to_signup():
     tk.Label(main_frame, text="Full Name", font=("Arial", 12)).grid(row=0, column=0, padx=10, pady=10, sticky="w")
     fullname_entry = tk.Entry(main_frame)
     fullname_entry.grid(row=0, column=1, padx=10, pady=10)
-    print(fullname_entry)
 
     # Username
     tk.Label(main_frame, text="Username", font=("Arial", 12)).grid(row=1, column=0, padx=10, pady=10, sticky="w")
@@ -67,8 +72,12 @@ def switch_to_signup():
     confirm_password_entry = tk.Entry(main_frame, show="*")
     confirm_password_entry.grid(row=7, column=1, padx=10, pady=10)
 
+    button_thing = tk.Button(main_frame, text="button", command=connect)
+    button_thing.grid(row=8, columnspan=2, pady=20)
+
+
     # Signup button
-    signup_button = tk.Button(main_frame, text="Sign Up", font=("Arial", 12), bg="#4CAF50", fg="white", width=15)
+    signup_button = tk.Button(main_frame, text="Sign Up", command=lambda: store_data(fullname_entry, username_entry, age_entry, phone_entry, experience, cook_type, password_entry), font=("Arial", 12), bg="#4CAF50", fg="white", width=15)
     signup_button.grid(row=8, columnspan=2, pady=20)
 
     # Switch to Login button
