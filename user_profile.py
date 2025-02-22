@@ -120,17 +120,10 @@ def reload_profile():
 reload_button = tk.Button(root, text="Reload Profile", font=("Arial", 14), bg="#00796b", fg="white", command=reload_profile)
 reload_button.pack(pady=10)
 
-
-
-display_profile('nirdesh')
-
-<<<<<<< HEAD
-# Main event loop
-=======
 display_profile(str(sys.argv[1]))
 root.state("zoomed")
 root.geometry('800x800')
->>>>>>> c1c1d03812626bc01d1ab47540b572cc98bbd648
+
 root.mainloop()
 
 
