@@ -70,6 +70,6 @@ btn_reload = tk.Button(root, image=reload_icon, command=reload_profile, bd=0, hi
 btn_reload.place(x=20, y=20)
 
 display_profile(str(sys.argv[1]))
-
+root.state("zoomed")
 root.geometry('800x800')
 root.mainloop()
