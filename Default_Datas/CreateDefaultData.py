@@ -12,17 +12,17 @@ def connection_create():
             cursor = connection.cursor()
             cursor.execute("CREATE DATABASE IF NOT EXISTS cookbook")
             cursor.execute("USE cookbook")
+            cursor.execute("DROP TABLE IF EXISTS profile")
             cursor.execute('''CREATE TABLE IF NOT EXISTS profile (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             name VARCHAR(50) NOT NULL,
                             username VARCHAR(50) NOT NULL,
                             password VARCHAR(50) NOT NULL,
-                            birth_date DATE,
                             phone_number VARCHAR(15),
                             email VARCHAR(100) NOT NULL,
                             age INT NOT NULL,
                             cook_type VARCHAR(50),
-                            experience TEXT)''')
+                            experience int)''')
     except Error as e:
         print("ERROR: \n", e)   
 connection_create()
