@@ -20,30 +20,53 @@ def display_profile(username):
     connection = connect()
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM profile WHERE username = %s", (username,))
-    user = cursor.fetchall()
+    user = cursor.fetchone()
     if user:
-        user_id= user[0][0]
-        name = user[0][1]
-        email= user[0][4]
-        label_user_id.config(text="Username: " + str(user_id))
-        label_name.config(text="Email: " + name)
-        label_email.config(text="Bio: " + email)
+        user_id= user[0]
+        name = user[1]
+        email= user[4]
+        label_user_id.config(text="User ID: " + str(user_id))
+        label_name.config(text="Name: " + name)
+        label_email.config(text="Email: " + email)
 
 # main root
 root = tk.Tk()
 root.title("User Profile")
 
 
-label_user_id = tk.Label(root, text="Username: ")
-label_user_id.pack()
+# Title Label
+title_label = tk.Label(root, text="User Profile", font=("Arial", 24, "bold"), bg="#00796b", fg="white", padx=10, pady=10)
+title_label.pack(fill="x")
 
-label_email = tk.Label(root, text="Email: ")
-label_email.pack()
+# Frame for user info
+frame = tk.Frame(root, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
+frame.pack(pady=30, padx=20, fill="both", expand=True)
 
-label_name = tk.Label(root, text="Bio: ")
-label_name.pack()
+label_user_id = tk.Label(frame, text="User ID: ", font=("Arial", 16), bg="#ffffff", anchor="w")
+label_user_id.pack(fill="x", pady=10)
+
+label_name = tk.Label(frame, text="Name: ", font=("Arial", 16), bg="#ffffff", anchor="w")
+label_name.pack(fill="x", pady=10)
+
+label_email = tk.Label(frame, text="Email: ", font=("Arial", 16), bg="#ffffff", anchor="w")
+label_email.pack(fill="x", pady=10)
+
+
+
+def reload_profile():
+    display_profile('nirdesh')
+
+
+# Load and resize the reload icon
+reload_image = Image.open("refresh.png")  # Make sure to have reload.png in your working directory
+reload_image = reload_image.resize((30, 30))  # Resize image
+reload_icon = ImageTk.PhotoImage(reload_image)
+
+# Icon button
+btn_reload = tk.Button(root, image=reload_icon, command=reload_profile, bd=0, highlightthickness=0)
+btn_reload.place(x=20, y=20)
 
 display_profile('nirdesh')
 
-
+root.geometry('800x800')
 root.mainloop()
