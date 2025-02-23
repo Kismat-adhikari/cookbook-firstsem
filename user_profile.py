@@ -4,6 +4,7 @@ import mysql.connector
 from mysql.connector import Error
 from PIL import Image, ImageTk
 import sys
+import io
 
 # Connect to MySQL database
 def connect():
@@ -22,7 +23,7 @@ def display_profile(username):
     connection = connect()
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT id,username,name,age,phone_number,email,cooktype,experience FROM profile WHERE name = %s", (username,))
+        cursor.execute("SELECT * FROM profile WHERE name = %s", (username,))
         user = cursor.fetchone()
         print(user)
         if user:
@@ -32,8 +33,14 @@ def display_profile(username):
             age = user[3]
             phone_number= user[4]
             email= user[5]
-            cooking_type = user[6]
-            experience = user[7]
+            cooking_type = user[7]
+            experience = user[8]
+            profilePic = user[9]
+            image = Image.open(io.BytesIO(profilePic))
+            image.thumbnail((300, 300))
+            img_tk = ImageTk.PhotoImage(image)
+            label_image.config(image=img_tk)
+            label_image.image = img_tk
 
             label_user_id.config(text="User ID: " +str(user_id))
             label_user_id.config(text="Username: " + str(username))
@@ -42,7 +49,8 @@ def display_profile(username):
             label_age.config(text="Age: " + str(age))
             label_phone_number.config(text="Phone: " + phone_number)
             label_cooking_type.config(text="Cook Type: " + str(cooking_type))
-            label_experience.config(text="Experience: " + experience)
+            label_experience.config(text="Experience: " + str(experience))
+            
 
     except Error as e:
         print(f"Error :{e}")
@@ -98,6 +106,9 @@ label_cooking_type.pack(fill="x", pady=10)
 label_experience = tk.Label(frame, text="Experience: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
 label_experience.pack(fill="x", pady=10)
 
+label_image = tk.Label(frame, bg="#f7f7f7")
+label_image.pack(fill="x", pady=10)
+
 
 
 def reload_profile():
@@ -106,8 +117,8 @@ def reload_profile():
 reload_button = tk.Button(root, text="Reload Profile", font=("Arial", 14), bg="#00796b", fg="white", command=reload_profile)
 reload_button.pack(pady=10)
 
-# display_profile(str(sys.argv[1]))
-display_profile("nirdesh")
+display_profile(str(sys.argv[1]))
+# display_profile("nirdesh")
 
 #  updating canvas scroll
 frame.update_idletasks()

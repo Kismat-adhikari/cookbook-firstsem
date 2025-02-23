@@ -55,7 +55,6 @@ def check_login(username_email_entry, password_entry):
     cursor = connection.cursor()
     cursor.execute("SELECT name, password FROM profile WHERE username = %s OR email = %s", (username_email_entry.get(), username_email_entry.get()))
     user = cursor.fetchone()
-    print(user)
     if user:
         name, password = user
         if password == password_entry.get():
