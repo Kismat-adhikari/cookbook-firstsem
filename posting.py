@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
+from PIL import Image, ImageTk
 
 # Validation function to ensure only numbers 1-5 are entered for rating
 def validate_rating_input(P):
@@ -22,12 +23,19 @@ def select_image():
         filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.gif")]
     )
     if file_path:
-        image_label.config(text=f"Selected Image: {file_path}")
+        # Load the image and display it in the window
+        image = Image.open(file_path)
+        image = image.resize((150, 150))  # Resize image to fit in the window
+        img = ImageTk.PhotoImage(image)
+
+        # Update the image label with the selected image
+        image_label.config(image=img)
+        image_label.image = img  # Keep a reference to avoid garbage collection
 
 # Create the main window
 root = tk.Tk()
 root.title("Simple Food Entry Form")
-root.geometry("300x600")  # Set window size
+root.geometry("300x700")  # Increased window size to accommodate image display
 
 # Register the validation command
 vcmd_numeric = (root.register(validate_numeric_input), '%P')
