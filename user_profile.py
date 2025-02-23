@@ -36,8 +36,20 @@ def display_profile(username):
             cooking_type = user[7]
             experience = user[8]
             profilePic = user[9]
+            bio = user[10]
+
+            # to make profile image a circular with border(designs)
+        
+
             image = Image.open(io.BytesIO(profilePic))
-            image.thumbnail((300, 300))
+            image= image.convert("RGBA")
+            image.thumbnail((300, 300),Image.ANITALIAS)
+            mask= Image.new("L", (image.size),0)
+            draw = ImageDraw.Draw(mask)
+            draw.ellipse((0,0,image.size[0],image.size[1]),fill=255)
+            image.putalpha(mask)
+            image=ImageOps.fit(image,(300,300),method=0,bleed=0.0,centering=(0.5,0.5))
+
             img_tk = ImageTk.PhotoImage(image)
             label_image.config(image=img_tk)
             label_image.image = img_tk
@@ -50,7 +62,7 @@ def display_profile(username):
             label_phone_number.config(text="Phone: " + phone_number)
             label_cooking_type.config(text="Cook Type: " + str(cooking_type))
             label_experience.config(text="Experience: " + str(experience))
-            
+            label_bio.config(text="bio: "+ str(bio))
 
     except Error as e:
         print(f"Error :{e}")
@@ -85,6 +97,10 @@ canvas.configure(yscrollcommand=scrollbar.set)
 frame = tk.Frame(root, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
 frame.pack(pady=30, padx=20, fill="both", expand=True)
 
+# profile picture with border
+label_image = tk.Label(frame,bg="#f7f7f7",relief="solid",bd=2,width=20,height=10)
+label_image.pack(fill="x",pady=20)
+
 label_user_id = tk.Label(frame, text="Username: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
 label_user_id.pack(fill="x", pady=10)
 
@@ -104,6 +120,9 @@ label_cooking_type = tk.Label(frame, text="Cook Type: ", font=("Helvetica", 16),
 label_cooking_type.pack(fill="x", pady=10)
 
 label_experience = tk.Label(frame, text="Experience: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_experience.pack(fill="x", pady=10)
+
+label_bio = tk.Label(frame,text="bio: ",font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
 label_experience.pack(fill="x", pady=10)
 
 label_image = tk.Label(frame, bg="#f7f7f7")
