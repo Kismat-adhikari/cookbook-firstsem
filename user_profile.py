@@ -22,24 +22,31 @@ def display_profile(username):
     connection = connect()
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM profile WHERE name = %s", (username,))
+        cursor.execute("SELECT id,username,name,age,phone_number,email,cooktype FROM Aprofile WHERE name = %s", (username,))
         user = cursor.fetchone()
         print(user)
         if user:
             user_id= user[0]
-            username = user[2]
             full_name = user[1]
-            email= user[5]
+            username = user[2]
             age = user[3]
+            phone_number= user[4]
+            email= user[5]
             cooking_type = user[6]
             experience = user[7]
 
-            label_user_id.config(text="" + str(username))
+            label_user_id.config(text="User ID: " +str(user_id))
+            label_user_id.config(text="Username: " + str(username))
             label_name.config(text="Name: " + full_name)
             label_email.config(text="Email: " + email)
+            label_age.config(text="Age: " + str(age))
+            label_phone_number.config(text="Phone: " + phone_number)
+            label_cooking_type.config(text="Cook Type: " + str(cooking_type))
+            label_experience.config(text="Experience: " + experience)
+
     except Error as e:
         print(f"Error :{e}")
-        messagebox.show
+        messagebox.showerror("Error", "Could not load profile Information.")
 
     finally:
         if cursor:
@@ -57,6 +64,15 @@ root.config(bg="#f5f5f5")
 title_label = tk.Label(root, text="User Profile", font=("Helvetica", 24, "bold"), bg="#00796b", fg="white", padx=10, pady=10)
 title_label.pack(fill="x")
 
+# scrollbar 
+canvas = tk.Canvas(root)
+canvas.pack(side="left",fill="both",expand= True)
+
+scrollbar = tk.Scrollbar(root,orient="vertical",command=canvas.yview)
+scrollbar.pack(side="right",fill="y")
+
+canvas.configure(yscrollcommand=scrollbar.set)
+
 # Frame for user info
 frame = tk.Frame(root, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
 frame.pack(pady=30, padx=20, fill="both", expand=True)
@@ -69,6 +85,18 @@ label_name.pack(fill="x", pady=10)
 
 label_email = tk.Label(frame, text="Email: ", font=("Arial", 16), bg="#ffffff", anchor="w")
 label_email.pack(fill="x", pady=10)
+
+label_age = tk.Label(frame, text="Age: ", font=("Helvetica", 16), bg="#ffffff", anchor="w")
+label_age.pack(fill="x", pady=10)
+
+label_phone_number = tk.Label(frame, text="Phone: ", font=("Helvetica", 16), bg="#ffffff", anchor="w")
+label_phone_number.pack(fill="x", pady=10)
+
+label_cooking_type = tk.Label(frame, text="Cook Type: ", font=("Helvetica", 16), bg="#ffffff", anchor="w")
+label_cooking_type.pack(fill="x", pady=10)
+
+label_experience = tk.Label(frame, text="Experience: ", font=("Helvetica", 16), bg="#ffffff", anchor="w")
+label_experience.pack(fill="x", pady=10)
 
 
 
