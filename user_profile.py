@@ -22,7 +22,7 @@ def display_profile(username):
     connection = connect()
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT id,username,name,age,phone_number,email,cooktype FROM Aprofile WHERE name = %s", (username,))
+        cursor.execute("SELECT id,username,name,age,phone_number,email,cooktype,experience FROM profile WHERE name = %s", (username,))
         user = cursor.fetchone()
         print(user)
         if user:
@@ -77,25 +77,25 @@ canvas.configure(yscrollcommand=scrollbar.set)
 frame = tk.Frame(root, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
 frame.pack(pady=30, padx=20, fill="both", expand=True)
 
-label_user_id = tk.Label(frame, text="Username: ", font=("Helvetica", 16), bg="#ffffff", anchor="w")
+label_user_id = tk.Label(frame, text="Username: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
 label_user_id.pack(fill="x", pady=10)
 
-label_name = tk.Label(frame, text="Name: ", font=("Helvetica", 16), bg="#ffffff", anchor="w")
+label_name = tk.Label(frame, text="Name: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
 label_name.pack(fill="x", pady=10)
 
-label_email = tk.Label(frame, text="Email: ", font=("Arial", 16), bg="#ffffff", anchor="w")
+label_email = tk.Label(frame, text="Email: ", font=("Arial", 16), bg="#ffffff", anchor="center",width=30)
 label_email.pack(fill="x", pady=10)
 
-label_age = tk.Label(frame, text="Age: ", font=("Helvetica", 16), bg="#ffffff", anchor="w")
+label_age = tk.Label(frame, text="Age: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
 label_age.pack(fill="x", pady=10)
 
-label_phone_number = tk.Label(frame, text="Phone: ", font=("Helvetica", 16), bg="#ffffff", anchor="w")
+label_phone_number = tk.Label(frame, text="Phone: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
 label_phone_number.pack(fill="x", pady=10)
 
-label_cooking_type = tk.Label(frame, text="Cook Type: ", font=("Helvetica", 16), bg="#ffffff", anchor="w")
+label_cooking_type = tk.Label(frame, text="Cook Type: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
 label_cooking_type.pack(fill="x", pady=10)
 
-label_experience = tk.Label(frame, text="Experience: ", font=("Helvetica", 16), bg="#ffffff", anchor="w")
+label_experience = tk.Label(frame, text="Experience: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
 label_experience.pack(fill="x", pady=10)
 
 
@@ -108,6 +108,12 @@ reload_button.pack(pady=10)
 
 # display_profile(str(sys.argv[1]))
 display_profile("nirdesh")
+
+#  updating canvas scroll
+frame.update_idletasks()
+canvas.config(scrollregion=canvas.bbox("all"))
+canvas.update_idletasks()
+
 root.state("zoomed")
 root.geometry('800x800')
 
