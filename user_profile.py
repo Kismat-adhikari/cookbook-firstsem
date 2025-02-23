@@ -3,6 +3,7 @@ from tkinter import messagebox
 import mysql.connector
 from mysql.connector import Error
 from PIL import Image, ImageTk
+import sys
 
 # Connect to MySQL database
 def connect():
@@ -16,69 +17,26 @@ def connect():
         print("connected!")
         return connection
 
-# inserting new user data into database
-def insert_user(username,email,bio,profile_pic,full_name,cooking_type,experience):
-    try:
-        query=""" 
-        INSERT INTO profile (username,email,bio,profile_pic,full_name,cooking_type,experience)
-        VALUES(%s,%s,%s,%s,%s,%s,%s)
-        """
-
-        connection= connect()
-        cursor=connection.cursor()
-
-        data=(username,email,bio,profile_pic,full_name,cooking_type,experience)
-        
-        cursor.execute(query,data)
-
-        connection.commit()
-
-        messagebox.showinfo("success","user data inserted successfully!!")
-
-        cursor.close()
-        connection.close()
-
-    except Error as e:
-        print(f"Error: {e}")
-        messagebox.showerror("Error",f"Failed to insert data{e}")
-
-    finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
-
 
 def display_profile(username):
     connection = connect()
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM profile WHERE username = %s", (username,))
+        cursor.execute("SELECT * FROM profile WHERE name = %s", (username,))
         user = cursor.fetchone()
+        print(user)
         if user:
             user_id= user[0]
-            full_name = user[4]
-            email= user[2]
-            bio = user [3]
-            profile_pic = user[5]
+            username = user[2]
+            full_name = user[1]
+            email= user[5]
+            age = user[3]
             cooking_type = user[6]
             experience = user[7]
 
-            label_user_id.config(text="Username: " + str(user_id))
+            label_user_id.config(text="" + str(username))
             label_name.config(text="Name: " + full_name)
             label_email.config(text="Email: " + email)
-
-            if profile_pic:
-                img= Image.open(profile_pic)
-                img= img.resize((100,100))
-                profile_pic_image = ImageTk.PhotoImage(img)
-                profile_pic_label.config(image=profile_pic_image)
-                profile_pic_label.image=profile_pic_image
-            else:
-                profile_pic_label.config(image=" ",text="No profile picture")
-        else:
-            messagebox.showerror("Error","user not found!")
-
     except Error as e:
         print(f"Error :{e}")
         messagebox.show
@@ -115,12 +73,13 @@ label_email.pack(fill="x", pady=10)
 
 
 def reload_profile():
-    display_profile('nirdesh')
+    display_profile(str(sys.argv[1]))
 
 reload_button = tk.Button(root, text="Reload Profile", font=("Arial", 14), bg="#00796b", fg="white", command=reload_profile)
 reload_button.pack(pady=10)
 
-display_profile(str(sys.argv[1]))
+# display_profile(str(sys.argv[1]))
+display_profile("nirdesh")
 root.state("zoomed")
 root.geometry('800x800')
 
