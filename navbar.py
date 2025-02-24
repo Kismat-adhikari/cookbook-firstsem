@@ -36,4 +36,7 @@ if __name__ == "__main__":
     navbar = NavigationBar(root)
     navbar.pack(fill=tk.X)
 
+    # Fullscrean
+    root.state("zoomed")
+
     root.mainloop()

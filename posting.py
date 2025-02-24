@@ -97,5 +97,8 @@ image_button.pack(pady=5)
 submit_button = tk.Button(root, text="Submit")
 submit_button.pack(pady=20)
 
+# Fullscrean
+root.state("zoomed")
+
 # Start the main loop
 root.mainloop()

@@ -66,5 +66,8 @@ def toggle_like():
 like_btn = tk.Button(card, text="❤ Like", font=ICON_FONT, fg="red", bg=BG_COLOR, bd=0, command=toggle_like)
 like_btn.pack(anchor="center", pady=(5, 0))
 
+# Fullscrean
+root.state("zoomed")
+
 # Run the Tkinter main loop
 root.mainloop()
