@@ -99,6 +99,17 @@ def switch_to_signup():
         entry.grid(row=i + 1, column=1, padx=10, pady=5)
         entries.append(entry)
 
+    # Password
+    tk.Label(scrollable_frame, text="Password", font=("Arial", 14), bg="#f7f7f7").grid(row=6, column=0, sticky="w", padx=10, pady=5)
+    password_entry = tk.Entry(scrollable_frame, show="*", font=("Arial", 14), width=30)
+    password_entry.grid(row=6, column=1, padx=10, pady=5)
+    
+    # confirm password
+    tk.Label(scrollable_frame, text="Confirm Password", font=("Arial", 14), bg="#f7f7f7").grid(row=7, column=0, sticky="w", padx=10, pady=5)
+    confirm_password_entry = tk.Entry(scrollable_frame, show="*", font=("Arial", 14), width=30)
+    confirm_password_entry.grid(row=7, column=1, padx=10, pady=5)
+
+    # inserting into entry
     fullname_entry, username_entry, email_entry, age_entry, phone_entry, password_entry, confirm_password_entry = entries
 
     # Dropdowns
