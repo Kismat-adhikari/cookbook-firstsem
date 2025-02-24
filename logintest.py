@@ -1,171 +1,321 @@
 import tkinter as tk
-from tkinter import ttk,messagebox,filedialog
-import mysql.connector
-from mysql.connector import Error
-import PIL
+from tkinter import ttk, messagebox, filedialog, scrolledtext
 from PIL import Image, ImageTk
-#import os to connect to other files
-import os 
+import mysql.connector
+import os
 
 image_data = None
-# Connect to MySQL  
+
 def connect():
     try:
-        connection=mysql.connector.connect(
+        connection = mysql.connector.connect(
             host='localhost',
-            database='cookbook',      
-            user='root', 
-            password='password123' 
-            )
+            database='cookbook',
+            user='root',
+            password='password123'
+        )
         if connection.is_connected():
             print("connected!")
             return connection
-    except Error as e:
+    except mysql.connector.Error as e:
         print("ERROR: \n", e)
+        messagebox.showerror("Database Error", f"Connection failed: {e}")
 
 def upload_image():
     file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")])
     if file_path:
+        global image_data
         try:
-            global image_data
             with open(file_path, 'rb') as file:
                 image_data = file.read()
+            
+            # Load the original image
+            original_image = Image.open(file_path)
+            
+            # Resize to a much larger size - 400x400 pixels
+            image = original_image.resize((400, 400))
+            
+            img_tk = ImageTk.PhotoImage(image)
+            
+            # Update the label with the new image
+            label_image.config(image=img_tk)
+            label_image.image = img_tk  # Keep a reference to prevent garbage collection
+            
+            # Reset width and height to accommodate the image
+            label_image.config(width=400, height=400)
+            
         except Exception as e:
             messagebox.showerror("Error", f"Failed to read image: {e}")
-        image = Image.open(file_path).resize((200, 200))
-        img_tk = ImageTk.PhotoImage(image)
-        label_image.config(image=img_tk)
-        label_image.image = img_tk 
-
-def store_data(fullname_entry,username_entry, email_entry,age_entry,phone_entry,experience,cook_type,password_entry):
+            
+def store_data(fullname_entry, username_entry, email_entry, age_entry, phone_entry, experience, cook_type, password_entry):
+    # Basic validation
+    if not fullname_entry.get() or not username_entry.get() or not email_entry.get() or not password_entry.get():
+        messagebox.showerror("Error", "Please fill in all required fields")
+        return
+        
     connection = connect()
-    cursor = connection.cursor()
-    cursor.execute("INSERT INTO profile (name, username, email, age, phone_number, experience, cook_type, password, profile_pic) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (fullname_entry.get(), username_entry.get(), email_entry.get(), age_entry.get(), phone_entry.get(), experience.get(), cook_type.get(), password_entry.get(), image_data))
-    connection.commit()
-    connection.close()
-    name=fullname_entry.get()
-    root.destroy() 
-    goto_profile(name)
-    
+    if connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute("INSERT INTO profile (name, username, email, age, phone_number, experience, cook_type, password, profile_pic) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+                        (fullname_entry.get(), username_entry.get(), email_entry.get(), age_entry.get(), phone_entry.get(), experience.get(), cook_type.get(), password_entry.get(), image_data))
+            connection.commit()
+            messagebox.showinfo("Success", "Account created successfully!")
+            name = fullname_entry.get()
+            root.destroy() 
+            goto_profile(name)
+        except mysql.connector.Error as e:
+            messagebox.showerror("Error", f"Failed to store data: {e}")
+        finally:
+            connection.close()
+
 def goto_profile(name):
-    os.system(f'python user_profile.py {name}')
+    try:
+        os.system(f'python user_profile.py {name}')
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to open profile page: {e}")
 
 def check_login(username_email_entry, password_entry):
+    if not username_email_entry.get() or not password_entry.get():
+        messagebox.showerror("Error", "Please enter username/email and password")
+        return
+        
     connection = connect()
-    cursor = connection.cursor()
-    cursor.execute("SELECT name, password FROM profile WHERE username = %s OR email = %s", (username_email_entry.get(), username_email_entry.get()))
-    user = cursor.fetchone()
-    if user:
-        name, password = user
-        if password == password_entry.get():
-            root.destroy()
-            goto_profile(name)
-        else:
-            messagebox.showerror("Error", "Invalid Password")
-    else:
-        messagebox.showerror("Error", "User not found")
+    if connection:
+        cursor = connection.cursor()
+        try:
+            cursor.execute("SELECT name, password FROM profile WHERE username = %s OR email = %s", 
+                        (username_email_entry.get(), username_email_entry.get()))
+            user = cursor.fetchone()
+            if user:
+                name, password = user
+                if password == password_entry.get():
+                    root.destroy()
+                    goto_profile(name)
+                else:
+                    messagebox.showerror("Error", "Invalid Password")
+            else:
+                messagebox.showerror("Error", "User not found")
+        except mysql.connector.Error as e:
+            messagebox.showerror("Error", f"Login failed: {e}")
+        finally:
+            connection.close()
 
 def switch_to_signup():
-    global main_frame
+    global main_frame, label_image
     for widget in main_frame.winfo_children():
         widget.destroy()
-    
-    main_frame.configure(bg="#f7f7f7")
 
-    # Add Scrollbar
-    canvas = tk.Canvas(main_frame)
+    # Create a canvas with scrollbar for scrolling
+    canvas = tk.Canvas(main_frame, bg="#f0f0f0")
     scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
-    scrollable_frame = tk.Frame(canvas)
     
+    # Configure the scrollable frame
+    scrollable_frame = tk.Frame(canvas, bg="#f0f0f0")
     scrollable_frame.bind(
         "<Configure>",
         lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
     )
-
+    
+    # Create a window inside the canvas to hold the scrollable frame
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     canvas.configure(yscrollcommand=scrollbar.set)
+    
+    # Pack the canvas and scrollbar
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
+    
+    # Configure canvas to expand with the window
+    main_frame.bind("<Configure>", lambda e: canvas.configure(width=e.width-20))  # 20 px for scrollbar
 
-    # Title
-    tk.Label(scrollable_frame, text="Sign Up", font=("Arial", 24, "bold"), bg="#f7f7f7").grid(row=0, columnspan=2, pady=20)
+    # Create a frame with padding and border for better visibility
+    signup_frame = tk.Frame(scrollable_frame, bg="white", bd=1, relief="solid")
+    signup_frame.pack(padx=40, pady=40, fill="both", expand=True)
 
-    # Form Fields
-    fields = ["Full Name", "Username", "Email", "Age", "Phone", "Password", "Confirm Password"]
-    entries = []
-    for i, field in enumerate(fields):
-        tk.Label(scrollable_frame, text=field, font=("Arial", 14), bg="#f7f7f7").grid(row=i + 1, column=0, sticky="w", padx=10, pady=5)
-        entry = tk.Entry(scrollable_frame, font=("Arial", 14), width=30)
-        entry.grid(row=i + 1, column=1, padx=10, pady=5)
-        entries.append(entry)
+    # Header with better spacing
+    header_frame = tk.Frame(signup_frame, bg="white")
+    header_frame.pack(fill="x", pady=20)
+    
+    tk.Label(header_frame, text="Create a New Account", font=("Arial", 24, "bold"), bg="white", fg="#4CAF50").pack()
 
-    fullname_entry, username_entry, email_entry, age_entry, phone_entry, password_entry, confirm_password_entry = entries
+    # Create a container for form fields
+    form_frame = tk.Frame(signup_frame, bg="white")
+    form_frame.pack(fill="both", expand=True, padx=30, pady=10)
 
-    # Dropdowns
-    tk.Label(scrollable_frame, text="Experience (years)", font=("Arial", 14), bg="#f7f7f7").grid(row=8, column=0, sticky="w", padx=10, pady=5)
-    experience = ttk.Combobox(scrollable_frame, values=[str(i) for i in range(1, 51)], state="readonly", width=28)
-    experience.grid(row=8, column=1, padx=10, pady=5)
+    # Fields with better spacing and alignment
+    fields_frame = tk.Frame(form_frame, bg="white")
+    fields_frame.pack(fill="both", expand=True)
 
-    tk.Label(scrollable_frame, text="Cook Type", font=("Arial", 14), bg="#f7f7f7").grid(row=9, column=0, sticky="w", padx=10, pady=5)
-    cook_type = ttk.Combobox(scrollable_frame, values=["Vegetarian", "Non-Vegetarian", "Vegan", "Dessert Specialist"], state="readonly", width=28)
-    cook_type.grid(row=9, column=1, padx=10, pady=5)
+    # Left column - Personal info
+    left_column = tk.Frame(fields_frame, bg="white")
+    left_column.pack(side="left", fill="both", expand=True, padx=(0, 10))
+    
+    fields_left = [("Full Name", None), ("Username", None), ("Email", None), ("Age", None)]
+    entries_left = []
+    
+    for field, show in fields_left:
+        field_frame = tk.Frame(left_column, bg="white")
+        field_frame.pack(fill="x", pady=8)
+        
+        tk.Label(field_frame, text=field, font=("Arial", 12), bg="white", anchor="w").pack(anchor="w", pady=(0, 2))
+        entry = tk.Entry(field_frame, font=("Arial", 12), width=25, bd=1, relief="solid")
+        if show:
+            entry.config(show=show)
+        entry.pack(fill="x", ipady=4)
+        entries_left.append(entry)
+    
+    fullname_entry, username_entry, email_entry, age_entry = entries_left
 
-    # Upload Image Button
-    upload_photo_button = tk.Button(scrollable_frame, text="Upload Profile Picture", command=upload_image, bg="#4CAF50", fg="white", font=("Arial", 14), relief="flat")
-    upload_photo_button.grid(row=10, columnspan=2, pady=10)
+    # Right column - Account info
+    right_column = tk.Frame(fields_frame, bg="white")
+    right_column.pack(side="right", fill="both", expand=True, padx=(10, 0))
+    
+    fields_right = [("Phone", None), ("Password", "*"), ("Confirm Password", "*")]
+    entries_right = []
+    
+    for field, show in fields_right:
+        field_frame = tk.Frame(right_column, bg="white")
+        field_frame.pack(fill="x", pady=8)
+        
+        tk.Label(field_frame, text=field, font=("Arial", 12), bg="white", anchor="w").pack(anchor="w", pady=(0, 2))
+        entry = tk.Entry(field_frame, font=("Arial", 12), width=25, bd=1, relief="solid")
+        if show:
+            entry.config(show=show)
+        entry.pack(fill="x", ipady=4)
+        entries_right.append(entry)
+    
+    phone_entry, password_entry, confirm_password_entry = entries_right
 
-    global label_image
-    label_image = tk.Label(scrollable_frame, bg="#f7f7f7")
-    label_image.grid(row=11, columnspan=2, pady=10)
+    # Experience dropdown
+    exp_frame = tk.Frame(left_column, bg="white")
+    exp_frame.pack(fill="x", pady=8)
+    
+    tk.Label(exp_frame, text="Experience (years)", font=("Arial", 12), bg="white").pack(anchor="w", pady=(0, 2))
+    experience = ttk.Combobox(exp_frame, values=["<1 year"] + [str(i) for i in range(1, 51)], state="readonly", font=("Arial", 11))
+    experience.pack(fill="x", ipady=3)
+    experience.current(0)
 
-    # Signup Button
-    signup_button = tk.Button(scrollable_frame, text="Sign Up", command=lambda: store_data(fullname_entry, username_entry, email_entry, age_entry, phone_entry, experience, cook_type, password_entry),
-                              bg="#4CAF50", fg="white", font=("Arial", 16, "bold"), relief="flat", width=20)
-    signup_button.grid(row=12, columnspan=2, pady=20)
+    # Cook type dropdown
+    cook_frame = tk.Frame(right_column, bg="white")
+    cook_frame.pack(fill="x", pady=8)
+    
+    tk.Label(cook_frame, text="Cook Type", font=("Arial", 12), bg="white").pack(anchor="w", pady=(0, 2))
+    cook_type = ttk.Combobox(cook_frame, values=["Vegetarian", "Non-Vegetarian", "Vegan", "Dessert Specialist"], state="readonly", font=("Arial", 11))
+    cook_type.pack(fill="x", ipady=3)
 
-    # Switch to Login Button
-    switch_to_login_button = tk.Button(scrollable_frame, text="Back to Login", command=switch_to_login, bg="#cccccc", font=("Arial", 12), relief="flat")
-    switch_to_login_button.grid(row=13, columnspan=2, pady=5)
+    # Profile picture section - Improved layout for bigger image
+    pic_frame = tk.Frame(signup_frame, bg="white")
+    pic_frame.pack(fill="x", padx=30, pady=10)
+    
+    pic_header = tk.Label(pic_frame, text="Profile Picture", font=("Arial", 12, "bold"), bg="white")
+    pic_header.pack(anchor="w", pady=(10, 5))
+    
+    pic_content = tk.Frame(pic_frame, bg="white")
+    pic_content.pack(fill="x")
+    
+    # Left side - button
+    upload_section = tk.Frame(pic_content, bg="white")
+    upload_section.pack(side="left", padx=(0, 20))
+    
+    upload_photo_button = tk.Button(upload_section, text="Upload Profile Picture", command=upload_image, 
+                                    bg="#4CAF50", fg="white", font=("Arial", 12), padx=10, pady=5)
+    upload_photo_button.pack(pady=10)
+    
+    # Right side - image preview (improved for actual pixel dimensions)
+    preview_section = tk.Frame(pic_content, bg="white")
+    preview_section.pack(side="right", padx=(20, 0))
+
+    # Don't specify width/height in character units
+    label_image = tk.Label(preview_section, bg="#f0f0f0", text="Image Preview")
+    label_image.pack(pady=10)
+
+    # Buttons section with better spacing
+    button_frame = tk.Frame(signup_frame, bg="white")
+    button_frame.pack(fill="x", padx=30, pady=20)
+    
+    signup_button = tk.Button(button_frame, text="Sign Up", 
+                              command=lambda: store_data(fullname_entry, username_entry, email_entry, age_entry, 
+                                                         phone_entry, experience, cook_type, password_entry),
+                              bg="#4CAF50", fg="white", font=("Arial", 14, "bold"), padx=15, pady=8)
+    signup_button.pack(fill="x", pady=(0, 10))
+    
+    login_button = tk.Button(button_frame, text="Back to Login", command=switch_to_login, 
+                             bg="#e0e0e0", fg="#333", font=("Arial", 12), padx=10, pady=5)
+    login_button.pack(fill="x")
+
+    # Enable mousewheel scrolling
+    def _on_mousewheel(event):
+        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    
+    canvas.bind_all("<MouseWheel>", _on_mousewheel)
 
 def switch_to_login():
+    global main_frame
     for widget in main_frame.winfo_children():
         widget.destroy()
 
-    main_frame.configure(bg="#f7f7f7")
+    main_frame.configure(bg="#f0f0f0")
 
-    # Title
-    tk.Label(main_frame, text="Login", font=("Arial", 24, "bold"), bg="#f7f7f7").grid(row=0, columnspan=2, pady=20)
+    # Create a frame with padding and border for better visibility
+    login_frame = tk.Frame(main_frame, bg="white", bd=1, relief="solid")
+    login_frame.pack(padx=40, pady=40, fill="both", expand=True)
 
-    # Username/Email
-    tk.Label(main_frame, text="Username or Email", font=("Arial", 14), bg="#f7f7f7").grid(row=1, column=0, padx=10, pady=10)
-    username_email_entry = tk.Entry(main_frame, font=("Arial", 14), width=30)
-    username_email_entry.grid(row=1, column=1, padx=10, pady=10)
+    # Header with better spacing
+    header_frame = tk.Frame(login_frame, bg="white")
+    header_frame.pack(fill="x", pady=25)
+    
+    tk.Label(header_frame, text="Login", font=("Arial", 24, "bold"), bg="white", fg="#4CAF50").pack()
 
-    # Password
-    tk.Label(main_frame, text="Password", font=("Arial", 14), bg="#f7f7f7").grid(row=2, column=0, padx=10, pady=10)
-    password_entry = tk.Entry(main_frame, show="*", font=("Arial", 14), width=30)
-    password_entry.grid(row=2, column=1, padx=10, pady=10)
+    # Form fields with better spacing
+    form_frame = tk.Frame(login_frame, bg="white")
+    form_frame.pack(fill="both", expand=True, padx=40, pady=20)
+    
+    # Username/Email field
+    username_frame = tk.Frame(form_frame, bg="white")
+    username_frame.pack(fill="x", pady=12)
+    
+    tk.Label(username_frame, text="Username or Email", font=("Arial", 12), bg="white").pack(anchor="w", pady=(0, 3))
+    username_email_entry = tk.Entry(username_frame, font=("Arial", 12), width=30, bd=1, relief="solid")
+    username_email_entry.pack(fill="x", ipady=5)
 
-    # Login Button
-    login_button = tk.Button(main_frame, text="Login", command=lambda: check_login(username_email_entry,password_entry), bg="#4CAF50", fg="white", font=("Arial", 16, "bold"), relief="flat", width=20)
-    login_button.grid(row=3, columnspan=2, pady=20)
+    # Password field
+    password_frame = tk.Frame(form_frame, bg="white")
+    password_frame.pack(fill="x", pady=12)
+    
+    tk.Label(password_frame, text="Password", font=("Arial", 12), bg="white").pack(anchor="w", pady=(0, 3))
+    password_entry = tk.Entry(password_frame, show="*", font=("Arial", 12), width=30, bd=1, relief="solid")
+    password_entry.pack(fill="x", ipady=5)
 
-    # Switch to Signup Button
-    signup_button = tk.Button(main_frame, text="Sign Up", command=switch_to_signup, bg="#cccccc", font=("Arial", 12), relief="flat")
-    signup_button.grid(row=4, columnspan=2, pady=5)
+    # Buttons with better spacing and colors
+    button_frame = tk.Frame(login_frame, bg="white")
+    button_frame.pack(fill="x", padx=40, pady=30)
+    
+    login_button = tk.Button(button_frame, text="Login", command=lambda: check_login(username_email_entry, password_entry), 
+                             bg="#4CAF50", fg="white", font=("Arial", 14, "bold"), padx=15, pady=8)
+    login_button.pack(fill="x", pady=(0, 10))
+    
+    signup_button = tk.Button(button_frame, text="Sign Up", command=switch_to_signup, 
+                              bg="#e0e0e0", fg="#333", font=("Arial", 12), padx=10, pady=5)
+    signup_button.pack(fill="x")
 
-# Main window setup
+# Initialize application
 root = tk.Tk()
 root.title("Login and Signup")
 
-# Set window size to fit both forms perfectly
-root.state("zoomed")  # Fullscreen
-root.geometry("400x600")  # Adjusted size
+# Significantly increased window size for the larger image
+window_width = 950
+window_height = 850
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+x = (screen_width - window_width) // 2
+y = (screen_height - window_height) // 2
+root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
-main_frame = tk.Frame(root)
-main_frame.pack(expand=True, fill="both", padx=20, pady=20)
+# Create main frame with better background
+main_frame = tk.Frame(root, bg="#f0f0f0")
+main_frame.pack(expand=True, fill="both")
 
-# Start with the login screen
+# Start with login screen
 switch_to_login()
 
 root.mainloop()
