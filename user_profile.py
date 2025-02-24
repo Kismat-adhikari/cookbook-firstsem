@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox,ttk
 import mysql.connector
 from mysql.connector import Error
 from PIL import Image, ImageTk, ImageDraw, ImageOps
@@ -17,10 +17,10 @@ def connect():
     if connection.is_connected():
         print("connected!")
         return connection
-
-
+    
 def display_profile(username):
     connection = connect()
+    cursor = None
     try:
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM profile WHERE name = %s", (username,))
@@ -56,7 +56,7 @@ def display_profile(username):
             label_image.config(image=img_tk)
             label_image.image = img_tk
             
-
+            #label the vaiables and config data
             label_user_id.config(text="User ID: " +str(user_id))
             label_user_id.config(text="Username: " + str(username))
             label_name.config(text="Name: " + full_name)
@@ -66,93 +66,146 @@ def display_profile(username):
             label_cooking_type.config(text="Cook Type: " + str(cooking_type))
             label_experience.config(text="Experience: " + str(experience))
             label_bio.config(text="bio: "+ str(bio))
-
+            cursor.close()
+            connection.close()
     except Error as e:
         print(f"Error :{e}")
         messagebox.showerror("Error", "Could not load profile Information.")
-
-    finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
 
 # main root
 root = tk.Tk()
 root.title("User Profile")
 root.config(bg="#f5f5f5")
 
+# Main Frame
+main_frame = tk.Frame(root, bg="#f0f0f0")
+main_frame.pack(expand=True, fill="both")
 
 # Title Label
-title_label = tk.Label(root, text="User Profile", font=("Helvetica", 24, "bold"), bg="#00796b", fg="white", padx=10, pady=10)
+title_label = tk.Label(main_frame, text="User Profile", font=("Helvetica", 24, "bold"), bg="#00796b", fg="white", padx=10, pady=10)
 title_label.pack(fill="x")
 
-# scrollbar 
-canvas = tk.Canvas(root)
-canvas.pack(side="left",fill="both",expand= True)
+# Create a canvas with scrollbar for scrolling
+canvas = tk.Canvas(main_frame, bg="#f0f0f0")
+scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
 
-scrollbar = tk.Scrollbar(root,orient="vertical",command=canvas.yview)
-scrollbar.pack(side="right",fill="y")
+# Configure the scrollable frame
+scrollable_frame = tk.Frame(canvas, bg="#f0f0f0")
+scrollable_frame.bind(
+    "<Configure>",lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+)
 
+# Create a window inside the canvas to hold the scrollable frame
+canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
 canvas.configure(yscrollcommand=scrollbar.set)
 
+# Pack the canvas and scrollbar
+canvas.pack(side="left", fill="both", expand=True)
+scrollbar.pack(side="right", fill="y")
+
+# Configure canvas to expand with the window
+# main_frame.bind("<Configure>", lambda e: canvas.configure(width=e.width-20))
+
 # Frame for user info
-frame = tk.Frame(root, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=3)
-frame.pack(pady=30, padx=20, fill="x", expand=True)
+frame = tk.Frame(scrollable_frame, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=1)
+frame.pack(fill="x",expand=True)
+
 
 # profile picture with border
 label_image = tk.Label(frame, bg="#f7f7f7", relief="solid", bd=2)
-label_image.grid(row=0, column=0, rowspan=5, padx=20)
+label_image.grid(row=0, column=0, rowspan=5, padx=30)
 
-# frame for details
-info_frame = tk.Frame(frame, bg="#ffffff")
-info_frame.grid(row=0, column=1, sticky="w")
+label_user_id = tk.Label(frame, text="Username: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_user_id.grid(row=0, column=3, pady=5, padx=600)
 
-label_user_id = tk.Label(info_frame, text="Username: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
-label_user_id.pack(anchor="w", pady=5)
+label_name = tk.Label(frame, text="Name: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_name.grid(row=1, column=3, pady=5)
 
-label_name = tk.Label(info_frame, text="Name: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
-label_name.pack(anchor="w", pady=5)
+label_email = tk.Label(frame, text="Email: ", font=("Arial", 16), bg="#ffffff", anchor="center",width=30)
+label_email.grid(row=2, column=3, pady=5)
 
-label_email = tk.Label(info_frame, text="Email: ", font=("Arial", 16), bg="#ffffff", anchor="center",width=30)
-label_email.pack(anchor="w", pady=5)
+label_age = tk.Label(frame, text="Age: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_age.grid(row=3, column=3, pady=5)
 
-label_age = tk.Label(info_frame, text="Age: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
-label_age.pack(anchor="w", pady=5)
+label_phone_number = tk.Label(frame, text="Phone: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_phone_number.grid(row=4, column=3, pady=5)
 
-label_phone_number = tk.Label(info_frame, text="Phone: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
-label_phone_number.pack(anchor="w", pady=5)
+label_cooking_type = tk.Label(frame, text="Cook Type: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_cooking_type.grid(row=5, column=3, pady=5)
 
-label_cooking_type = tk.Label(info_frame, text="Cook Type: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
-label_cooking_type.pack(anchor="w", pady=5)
+label_experience = tk.Label(frame, text="Experience: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_experience.grid(row=6, column=3, pady=5)
 
-label_experience = tk.Label(info_frame, text="Experience: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
-label_experience.pack(anchor="w", pady=5)
+label_bio = tk.Label(frame,text="bio: ",font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_bio.grid(row=7, column=3, pady=5)
 
-label_bio = tk.Label(info_frame,text="bio: ",font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
-label_experience.pack(anchor="w", pady=5)
+#frame for user posts
+frame = tk.Frame(scrollable_frame, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=1)
+frame.pack(fill="x")
+posts_label = tk.Label(frame, text="User Posts:-", font=("Helvetica", 16, "bold"), bg="#ffffff", anchor="center",width=30)
+posts_label.grid(row=0, column=0, pady=5)
 
+# Create a card container
+BG_COLOR = "#ffffff"
+TEXT_COLOR = "#333333"
+TITLE_FONT = ("Arial", 14, "bold")
+DESC_FONT = ("Arial", 10)
+ICON_FONT = ("Arial", 12)
+USERNAME_FONT = ("Arial", 10, "italic")
 
+# Create the card container
+card = tk.Frame(frame, bg=BG_COLOR, padx=15, pady=15, relief="ridge", bd=2)
+card.grid(row=1, column=0, pady=5)
 
+# Title of the food item
+title_label = tk.Label(card, text="Spaghetti", font=TITLE_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+title_label.pack(anchor="w", pady=(5, 2))
 
+# Load and display the image below the title
+image = Image.open("testimage.jpeg")
+image = image.resize((100, 100))  # Resize the image as needed
+photo = ImageTk.PhotoImage(image)
+image_label = tk.Label(card, image=photo, bg=BG_COLOR)
+image_label.pack(anchor="center", pady=(5, 10))
 
-def reload_profile():
-    display_profile(str(sys.argv[1]))
+# Category label
+category_label = tk.Label(card, text="Category: Main Course", font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+category_label.pack(anchor="w")
 
-reload_button = tk.Button(root, text="Reload Profile", font=("Arial", 14), bg="#00796b", fg="white", command=reload_profile)
-reload_button.pack(pady=10)
+# Rating label
+rating_label = tk.Label(card, text="⭐ ⭐ ⭐ ⭐ ☆  (4/5)", font=ICON_FONT, fg="#FFD700", bg=BG_COLOR)
+rating_label.pack(anchor="w")
 
-display_profile(str(sys.argv[1]))
-# display_profile("nirdesh")
+# Duration label
+duration_label = tk.Label(card, text="⏳ Duration: 30 min", font=ICON_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+duration_label.pack(anchor="w")
 
-#  updating canvas scroll
-frame.update_idletasks()
-canvas.config(scrollregion=canvas.bbox("all"))
-canvas.update_idletasks()
+# Tags label
+tags_label = tk.Label(card, text="🏷 Tags: Italian, Pasta", font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+tags_label.pack(anchor="w")
+
+# Description label
+desc_label = tk.Label(card, text="A classic spaghetti dish with tomato sauce, garlic, olive oil, and fresh herbs. Simple, delicious, and perfect for any occasion.",
+                      wraplength=400, font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR, justify="left")
+desc_label.pack(anchor="w", pady=(5, 10))
+
+# Uploaded by label, now inside the container
+username_label = tk.Label(card, text="Uploaded by: Kathy", font=USERNAME_FONT, fg="#555", bg=BG_COLOR)
+username_label.pack(anchor="w")
+
+# Like button functionality
+def toggle_like():
+    if like_btn["text"] == "❤ Like":
+        like_btn["text"] = "💔 Unlike"
+    else:
+        like_btn["text"] = "❤ Like"
+
+# Like button
+like_btn = tk.Button(card, text="❤ Like", font=ICON_FONT, fg="red", bg=BG_COLOR, bd=0, command=toggle_like)
+like_btn.pack(anchor="center", pady=(5, 0))
+
+# display_profile(str(sys.argv[1]))
+display_profile("qwe")
 
 root.state("zoomed")
-root.geometry('800x800')
-
 root.mainloop()
-
-

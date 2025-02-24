@@ -309,7 +309,8 @@ screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 x = (screen_width - window_width) // 2
 y = (screen_height - window_height) // 2
-root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+#zoom the windoiw to full screen
+root.state("zoomed")# do not change this line
 
 # Create main frame with better background
 main_frame = tk.Frame(root, bg="#f0f0f0")
