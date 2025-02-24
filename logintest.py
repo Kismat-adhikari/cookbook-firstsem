@@ -22,7 +22,7 @@ def connect():
         messagebox.showerror("Database Error", f"Connection failed: {e}")
 
 def upload_image():
-    file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")])
+    file_path = filedialog.askopenfilename(filetypes=[("Image Files", ".png;.jpg;.jpeg;.gif")])
     if file_path:
         global image_data
         try:
@@ -146,16 +146,45 @@ def switch_to_signup():
     fields_frame = tk.Frame(form_frame, bg="white")
     fields_frame.pack(fill="both", expand=True)
 
-    # Form Fields
-    fields = ["Full Name", "Username", "Email", "Age", "Phone", "Password", "Confirm Password"]
-    entries = []
-    for i, field in enumerate(fields):
-        tk.Label(scrollable_frame, text=field, font=("Arial", 14), bg="#f7f7f7").grid(row=i + 1, column=0, sticky="w", padx=10, pady=5)
-        entry = tk.Entry(scrollable_frame, font=("Arial", 14), width=30)
-        entry.grid(row=i + 1, column=1, padx=10, pady=5)
-        entries.append(entry)
+      # Left column - Personal info
+    left_column = tk.Frame(fields_frame, bg="white")
+    left_column.pack(side="left", fill="both", expand=True, padx=(0, 10))
+    
+    fields_left = [("Full Name", None), ("Username", None), ("Email", None), ("Age", None)]
+    entries_left = []
+    
+    for field, show in fields_left:
+        field_frame = tk.Frame(left_column, bg="white")
+        field_frame.pack(fill="x", pady=8)
+        
+        tk.Label(field_frame, text=field, font=("Arial", 12), bg="white", anchor="w").pack(anchor="w", pady=(0, 2))
+        entry = tk.Entry(field_frame, font=("Arial", 12), width=25, bd=1, relief="solid")
+        if show:
+            entry.config(show=show)
+        entry.pack(fill="x", ipady=4)
+        entries_left.append(entry)
+    
+    fullname_entry, username_entry, email_entry, age_entry = entries_left
 
-    fullname_entry, username_entry, email_entry, age_entry, phone_entry, password_entry, confirm_password_entry = entries
+    # Right column - Account info
+    right_column = tk.Frame(fields_frame, bg="white")
+    right_column.pack(side="right", fill="both", expand=True, padx=(10, 0))
+    
+    fields_right = [("Phone", None), ("Password", ""), ("Confirm Password", "")]
+    entries_right = []
+    
+    for field, show in fields_right:
+        field_frame = tk.Frame(right_column, bg="white")
+        field_frame.pack(fill="x", pady=8)
+        
+        tk.Label(field_frame, text=field, font=("Arial", 12), bg="white", anchor="w").pack(anchor="w", pady=(0, 2))
+        entry = tk.Entry(field_frame, font=("Arial", 12), width=25, bd=1, relief="solid")
+        if show:
+            entry.config(show=show)
+        entry.pack(fill="x", ipady=4)
+        entries_right.append(entry)
+    
+    phone_entry, password_entry, confirm_password_entry = entries_right
 
     # Experience dropdown
     exp_frame = tk.Frame(left_column, bg="white")
