@@ -8,6 +8,7 @@ class CookbookAPP:
     def __init__(self,root):
         self.root = root
         self.root.title("Simple Food Entry Form")
+        self.root.configure(bg="#1c1c1c")  # Set main background to dark color
 
         self.image_data = None
         self.create_widgets()
@@ -28,37 +29,37 @@ class CookbookAPP:
 
     def create_widgets(self):
     # Name
-        self.name_label = tk.Label(self.root, text = "Name",font=("Helvetica", 24, "bold"),  fg="black", padx=10, pady=10)
+        self.name_label = tk.Label(self.root, text = "Name",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
         self.name_label.grid(row=0,column=0,padx=10,pady=5,sticky="w")
-        self.name_entry = tk.Entry(self.root, font=("Helvetica" , 14),width=30)
+        self.name_entry = tk.Entry(self.root, font=("Helvetica" , 14),width=30, bg="#2c2c2c", fg="white")
         self.name_entry.grid(row=0,column=1,padx=10,pady=5,sticky="ew")
 
     # Description
-        self.description_label = tk.Label(self.root, text="Description:",font=("Helvetica", 24, "bold"),  fg="black", padx=10, pady=10)
+        self.description_label = tk.Label(self.root, text="Description:",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
         self.description_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
-        self.description_entry = tk.Text(self.root, height=6,font=("Helvetica" , 14))
+        self.description_entry = tk.Text(self.root, height=6,font=("Helvetica" , 14), bg="#2c2c2c", fg="white")
         self.description_entry.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
         
     #  Tags
-        self.tags_label = tk.Label(self.root, text="Tags:",font=("Helvetica", 24, "bold"),  fg="black", padx=10, pady=10)
+        self.tags_label = tk.Label(self.root, text="Tags:",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
         self.tags_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
-        self.tags_entry = tk.Entry(self.root,font=("Helvetica" , 14),width=30)
+        self.tags_entry = tk.Entry(self.root,font=("Helvetica" , 14),width=30, bg="#2c2c2c", fg="white")
         self.tags_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
         
     #  Duration
-        self.duration_label = tk.Label(self.root, text="Duration (minutes):",font=("Helvetica", 24, "bold"),  fg="black", padx=10, pady=10)
+        self.duration_label = tk.Label(self.root, text="Duration (minutes):",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
         self.duration_label.grid(row=3, column=0, padx=10, pady=5, sticky="w")
-        self.duration_entry = tk.Entry(self.root, validate="key", validatecommand=(self.root.register(self.validate_numeric_input), '%P'),font=("Helvetica" , 14),width=30)
+        self.duration_entry = tk.Entry(self.root, validate="key", validatecommand=(self.root.register(self.validate_numeric_input), '%P'),font=("Helvetica" , 14),width=30, bg="#2c2c2c", fg="white")
         self.duration_entry.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
         
     #  Rating
-        self.rating_label = tk.Label(self.root, text="Rating (1-5):",font=("Helvetica", 24, "bold"),  fg="black", padx=10, pady=10)
+        self.rating_label = tk.Label(self.root, text="Rating (1-5):",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
         self.rating_label.grid(row=4, column=0, padx=10, pady=5, sticky="w")
-        self.rating_entry = tk.Entry(self.root, validate="key", validatecommand=(self.root.register(self.validate_rating_input), '%P'),font=("Helvetica" , 14),width=30)
+        self.rating_entry = tk.Entry(self.root, validate="key", validatecommand=(self.root.register(self.validate_rating_input), '%P'),font=("Helvetica" , 14),width=30, bg="#2c2c2c", fg="white")
         self.rating_entry.grid(row=4, column=1, padx=10, pady=5, sticky="ew")
         
     #    Category
-        self.category_label = tk.Label(self.root, text="Category:",font=("Helvetica", 24, "bold"),  fg="black", padx=10, pady=10)
+        self.category_label = tk.Label(self.root, text="Category:",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
         self.category_label.grid(row=5, column=0, padx=10, pady=5, sticky="w")
         self.category_options = ["Appetizer", "Main Course", "Dessert", "Beverage", "Snack"]
         self.category_dropdown = ttk.Combobox(self.root, values=self.category_options,font=("Helvetica", 14), width=27)
@@ -66,21 +67,24 @@ class CookbookAPP:
         self.category_dropdown.grid(row=5, column=1, padx=10, pady=5, sticky="ew")  
 
     # Ingredients
-        self.ingredient_label = tk.Label(self.root, text="Ingredients:",font=("Helvetica", 24, "bold"),  fg="black", padx=10, pady=10)
+        self.ingredient_label = tk.Label(self.root, text="Ingredients:",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
         self.ingredient_label.grid(row=6, column=0, padx=10, pady=5, sticky="w")
-        self.ingredient_entry = tk.Text(self.root, height=4,font=("Helvetica", 14))
+        self.ingredient_entry = tk.Text(self.root, height=4,font=("Helvetica", 14), bg="#2c2c2c", fg="white")
         self.ingredient_entry.grid(row=6, column=1, padx=10, pady=5, sticky="ew")
 
      # Image
-        self.image_label = tk.Label(self.root, text="No image selected",font=("Helvetica", 24, "bold"),  fg="black", padx=10, pady=10)
+        self.image_label = tk.Label(self.root, text="No image selected",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
         self.image_label.grid(row=7, column=0, padx=10, pady=5, sticky="w")
-        self.image_button = tk.Button(self.root, text="Select Image", command=self.upload_image,font=("Helvetica", 14),  fg="black")
+        self.image_button = tk.Button(self.root, text="Select Image", command=self.upload_image,font=("Helvetica", 14), bg="#d64444", fg="white", activebackground="#f46464", activeforeground="white")
         self.image_button.grid(row=7, column=1, padx=10, pady=5, sticky="ew")
 
     #  Submit Button
-        self.submit_button = tk.Button(self.root, text="Submit",font=("Helvetica", 24, "bold"),  fg="black", padx=10, pady=10, command=self.insert_data)
+        self.submit_button = tk.Button(self.root, text="Submit",font=("Helvetica", 24, "bold"), bg="#d64444", fg="white", padx=10, pady=10, command=self.insert_data, activebackground="#f46464", activeforeground="white")
         self.submit_button.grid(row=8, column=0, columnspan=2, padx=10, pady=20)
       
+        # Add style for combobox
+        style = ttk.Style()
+        style.configure('TCombobox', fieldbackground='#2c2c2c', background='#2c2c2c', foreground='white')
 
 # open file dialog to upload an image
     def upload_image(self):
@@ -155,6 +159,7 @@ class CookbookAPP:
 
 # Create the main window
 root = tk.Tk()
+root.configure(bg="#1c1c1c")  # Set the root window background
 app = CookbookAPP(root)
 
 root.state("zoomed")
