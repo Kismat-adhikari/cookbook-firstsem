@@ -18,13 +18,14 @@ def connect():
         print("connected!")
         return connection
     
-def display_profile(username):
+def display_profile(id):
     connection = connect()
     cursor = None
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM profile WHERE name = %s", (username,))
+        cursor.execute("SELECT * FROM profile WHERE id = %s", (id,))
         user = cursor.fetchone()
+        print(user)
         if user:
             user_id= user[0]
             full_name = user[1]
@@ -204,8 +205,8 @@ def toggle_like():
 like_btn = tk.Button(card, text="❤ Like", font=ICON_FONT, fg="red", bg=BG_COLOR, bd=0, command=toggle_like)
 like_btn.pack(anchor="center", pady=(5, 0))
 
-# display_profile(str(sys.argv[1]))
-display_profile("qwe")
+print(sys.argv[1])
+display_profile(str(sys.argv[1]))
 
 root.state("zoomed")
 root.mainloop()
