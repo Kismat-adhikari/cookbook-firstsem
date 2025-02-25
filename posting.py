@@ -194,9 +194,11 @@ class ModernCookbookApp:
         
         self.category_options = ["Appetizer", "Main Course", "Dessert", "Beverage", "Snack", "Breakfast", "Lunch", "Dinner", "Salad", "Soup"]
         self.category_dropdown = ttk.Combobox(
-            self.basic_info_frame, 
-            values=self.category_options, 
-            font=("Helvetica", 12)
+            self.basic_info_frame,  
+            values=self.category_options,  
+            font=("Helvetica", 12),
+            state="readonly"  # Add this line to make it read-only
+
         )
         self.category_dropdown.set("Select Category")
         self.category_dropdown.pack(fill=tk.X, pady=(0, 15))
