@@ -30,12 +30,13 @@ def connection_create():
                             )''')
             cursor.execute('''CREATE TABLE IF NOT EXISTS posts (
                             id INT AUTO_INCREMENT PRIMARY KEY,
-                            title VARCHAR(100) NOT NULL,
-                            description TEXT,
+                            name VARCHAR(100) NOT NULL,
+                            detail TEXT,
                             image LONGBLOB,
                             category VARCHAR(50),
                             tags VARCHAR(100),
                             duration VARCHAR(50),
+                            ingredient TEXT,
                             rating INT,
                             user_id INT,
                             FOREIGN KEY (user_id) REFERENCES profile(id)

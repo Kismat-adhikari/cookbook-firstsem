@@ -1,7 +1,9 @@
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 from PIL import Image, ImageTk
 import mysql.connector
+
+image_data = None
 
 # Validation function to ensure only numbers 1-5 are entered for rating
 def validate_rating_input(P):
@@ -18,23 +20,31 @@ def validate_numeric_input(P):
         return False
 
 # Function to open file dialog and select an image
-def select_image():
-    file_path = filedialog.askopenfilename(
-        title="Select an image",
-        filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.gif")]
-    )
+def upload_image():
+    file_path = filedialog.askopenfilename(filetypes=[("Image Files", ".png;.jpg;.jpeg;.gif")])
     if file_path:
-        # Load the image and display it in the window
-        image = Image.open(file_path)
-        image = image.resize((150, 150))  # Resize image to fit in the window
-        img = ImageTk.PhotoImage(image)
-
-        # Update the image label with the selected image
-        image_label.config(image=img)
-        image_label.image = img  # Keep a reference to avoid garbage collection
-
-        # store the image path
-        image_label.image_path = file_path
+        global image_data
+        try:
+            with open(file_path, 'rb') as file:
+                image_data = file.read()
+            
+            # Load the original image
+            original_image = Image.open(file_path)
+            
+            # Resize to a much larger size - 40x40pixels
+            image = original_image.resize((40, 40))
+            
+            img_tk = ImageTk.PhotoImage(image)
+            
+            # Update the label with the new image
+            image_label.config(image=img_tk)
+            image_label.image = img_tk  # Keep a reference to prevent garbage collection
+            
+            # Reset width and height to accommodate the image
+            image_label.config(width=40, height=40)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to read image: {e}")
 
 #function to connect database
 def connect_to_database():
@@ -52,44 +62,34 @@ def connect_to_database():
 
 #function to insert data into the profile table
 def insert_data():
+
     name = name_entry.get()
     if not name:
         print("Name is required")
         return
-    title = title_entry.get()
-    description = description_entry.get()
+    description = description_entry.get("1.0", tk.END).strip()
     tags = tags_entry.get()
     duration = duration_entry.get()
     rating = rating_entry.get()
     category = category_dropdown.get()
-    ingredient = ingredient_entry.get()
+    ingredient = ingredient_entry.get("1.0", tk.END).strip()
     image_path = image_label.image_path if hasattr(image_label,'image_path') else None
 
 # connect to the database
     conn = connect_to_database()
     if conn:
+        global image_data
         cursor = conn.cursor()
         
         # Insert the data into the profiling table
+        cursor.execute('''use cookbook''')
         cursor.execute('''
-            INSERT INTO profile (name,title, description, tags, duration, rating, category, ingredient, image_path)
+            INSERT INTO posts (name, detail, tags, duration, rating, category, ingredient, image, user_id)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s,%s)
-        ''', (name,title, description, tags, duration, rating, category, ingredient, image_path))
-        
+        ''', (name, description, tags, duration, rating, category, ingredient, image_data, 1))
+        print("Data inserted successfully")
         conn.commit()  # Save changes
         conn.close()   # Close the connection
-        
-        # Clear form fields after submission
-        name_entry.delete(0,tk.END)
-        title_entry.delete(0, tk.END)
-        description_entry.delete(0, tk.END)
-        tags_entry.delete(0, tk.END)
-        duration_entry.delete(0, tk.END)
-        rating_entry.delete(0, tk.END)
-        category_dropdown.set("Select Category")
-        ingredient_entry.delete(0, tk.END)
-        image_label.config(image=None, text="No image selected")
-        print("Data inserted successfully!")
 
 
 # Create the main window
@@ -109,16 +109,10 @@ name_label.pack(pady = 5)
 name_entry = tk.Entry(root)
 name_entry.pack(pady = 5)
 
-# Title
-title_label = tk.Label(root, text="Title:")
-title_label.pack(pady=5)
-title_entry = tk.Entry(root)
-title_entry.pack(pady=5)
-
 # Description
 description_label = tk.Label(root, text="Description:")
 description_label.pack(pady=5)
-description_entry = tk.Entry(root)
+description_entry = tk.Text(root,height=5)
 description_entry.pack(pady=5)
 
 # Tags
@@ -150,13 +144,13 @@ category_dropdown.pack(pady=5)
 # Ingredient
 ingredient_label = tk.Label(root, text="Ingredient:")
 ingredient_label.pack(pady=5)
-ingredient_entry = tk.Entry(root)
+ingredient_entry = tk.Text(root, height=2)
 ingredient_entry.pack(pady=5)
 
 # Image field
 image_label = tk.Label(root, text="No image selected")
 image_label.pack(pady=5)
-image_button = tk.Button(root, text="Select Image", command=select_image)
+image_button = tk.Button(root, text="Select Image", command=upload_image)
 image_button.pack(pady=5)
 
 # Submit Button
