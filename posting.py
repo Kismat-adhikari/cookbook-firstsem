@@ -53,6 +53,9 @@ def connect_to_database():
 #function to insert data into the profile table
 def insert_data():
     name = name_entry.get()
+    if not name:
+        print("Name is required")
+        return
     title = title_entry.get()
     description = description_entry.get()
     tags = tags_entry.get()
@@ -70,7 +73,7 @@ def insert_data():
         # Insert the data into the profiling table
         cursor.execute('''
             INSERT INTO profile (name,title, description, tags, duration, rating, category, ingredient, image_path)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s,%s)
         ''', (name,title, description, tags, duration, rating, category, ingredient, image_path))
         
         conn.commit()  # Save changes
