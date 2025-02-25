@@ -70,10 +70,15 @@ def store_data(fullname_entry, username_entry, email_entry, age_entry, phone_ent
             connection.close()
 
 def goto_profile(name):
-    try:
-        os.system(f'python user_profile.py {name}')
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to open profile page: {e}")
+    connection = connect() 
+    if connection:
+        cursor= connection.cursor()
+        try:
+            cursor.execute("SELECT id FROM profile WHERE name = %s", (name,))
+            id = cursor.fetchone()[0]
+            os.system(f'python user_profile.py {id}')
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open profile page: {e}")
 
 def check_login(username_email_entry, password_entry):
     if not username_email_entry.get() or not password_entry.get():
