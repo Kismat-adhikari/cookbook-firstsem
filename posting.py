@@ -1,145 +1,592 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox, scrolledtext
 from PIL import Image, ImageTk
 import mysql.connector
+import os
+from datetime import datetime
 
-
-class CookbookAPP:
-    def __init__(self,root):
+class ModernCookbookApp:
+    def __init__(self, root):
         self.root = root
-        self.root.title("Simple Food Entry Form")
-        self.root.configure(bg="#1c1c1c")  # Set main background to dark color
-
+        self.root.title("Gourmet Recipe Manager")
+        self.root.configure(bg="#f5f5f5")
+        
+        # Set app icon if available
+        try:
+            self.root.iconbitmap("cookbook_icon.ico")
+        except:
+            pass
+        
+        # Variables
         self.image_data = None
+        self.image_path = None
+        self.preview_image = None
+        
+        # Create main scrollable canvas
+        self.create_scrollable_canvas()
+        
+        # Configure styles
+        self.setup_styles()
+        
+        # Create UI elements
         self.create_widgets()
-
-   # Validate numeric input(for duration)
+        
+    def create_scrollable_canvas(self):
+        # Create canvas with scrollbar
+        self.main_canvas = tk.Canvas(self.root, bg="#f5f5f5", highlightthickness=0)
+        self.scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=self.main_canvas.yview)
+        
+        # Configure canvas
+        self.main_canvas.configure(yscrollcommand=self.scrollbar.set)
+        
+        # Place canvas and scrollbar in grid
+        self.main_canvas.grid(row=0, column=0, sticky="nsew")
+        self.scrollbar.grid(row=0, column=1, sticky="ns")
+        
+        # Make the canvas expandable
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
+        
+        # Create frame inside canvas for content
+        self.scroll_frame = tk.Frame(self.main_canvas, bg="#f5f5f5")
+        self.canvas_frame = self.main_canvas.create_window(
+            (0, 0), 
+            window=self.scroll_frame, 
+            anchor="nw",
+            tags="self.scroll_frame"
+        )
+        
+        # Configure scrolling
+        self.scroll_frame.bind("<Configure>", self.on_frame_configure)
+        self.main_canvas.bind("<Configure>", self.on_canvas_configure)
+        
+        # Enable mousewheel scrolling
+        self.main_canvas.bind_all("<MouseWheel>", self.on_mousewheel)
+    
+    def on_frame_configure(self, event):
+        # Reset the scroll region to encompass the inner frame
+        self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all"))
+    
+    def on_canvas_configure(self, event):
+        # Update the inner frame's width to fill the canvas
+        canvas_width = event.width
+        self.main_canvas.itemconfig(self.canvas_frame, width=canvas_width)
+    
+    def on_mousewheel(self, event):
+        # Scroll with mousewheel
+        self.main_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    
+    def setup_styles(self):
+        # Configure ttk styles
+        self.style = ttk.Style()
+        self.style.theme_use('clam')
+        
+        # Combobox style
+        self.style.configure(
+            'TCombobox', 
+            fieldbackground='white',
+            background='white',
+            selectbackground='#FF7676',
+            selectforeground='white'
+        )
+        
+        # Scrollbar style
+        self.style.configure(
+            'TScrollbar',
+            background='#FF5252',
+            troughcolor='#f0f0f0',
+            borderwidth=0,
+            arrowsize=14
+        )
+        
     def validate_numeric_input(self, P):
         if P.isdigit() or P == "":
             return True
         else:
             return False
 
-    # Validate rating input (1-5)
     def validate_rating_input(self, P):
-        if P.isdigit() and (P == "" or 1 <= int(P) <= 5):
+        if P == "":
             return True
-        else:
+        try:
+            value = int(P)
+            return 1 <= value <= 5
+        except ValueError:
             return False
-
+            
     def create_widgets(self):
-    # Name
-        self.name_label = tk.Label(self.root, text = "Name",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
-        self.name_label.grid(row=0,column=0,padx=10,pady=5,sticky="w")
-        self.name_entry = tk.Entry(self.root, font=("Helvetica" , 14),width=30, bg="#2c2c2c", fg="white")
-        self.name_entry.grid(row=0,column=1,padx=10,pady=5,sticky="ew")
+        # Main container with padding
+        self.main_frame = tk.Frame(self.scroll_frame, bg="#f5f5f5", padx=20, pady=20)
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # App header
+        self.title_frame = tk.Frame(self.main_frame, bg="#f5f5f5")
+        self.title_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        self.title_label = tk.Label(
+            self.title_frame, 
+            text="Gourmet Recipe Collection", 
+            font=("Helvetica", 28, "bold"), 
+            bg="#f5f5f5", 
+            fg="#FF5252"
+        )
+        self.title_label.pack(pady=10)
+        
+        # Two-column layout
+        self.content_frame = tk.Frame(self.main_frame, bg="#f5f5f5")
+        self.content_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Left column - Basic info
+        self.left_frame = tk.Frame(self.content_frame, bg="#f5f5f5", padx=10)
+        self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Right column - Description, ingredients and image
+        self.right_frame = tk.Frame(self.content_frame, bg="#f5f5f5", padx=10)
+        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        
+        # Create form fields
+        self.create_basic_info_fields()
+        self.create_description_fields()
+        self.create_image_section()
+        self.create_action_buttons()
+        
+    def create_basic_info_fields(self):
+        # Basic info section
+        self.basic_info_frame = tk.LabelFrame(
+            self.left_frame, 
+            text="Recipe Information", 
+            font=("Helvetica", 14, "bold"), 
+            bg="#f5f5f5", 
+            fg="#333333",
+            padx=15,
+            pady=15
+        )
+        self.basic_info_frame.pack(fill=tk.X, pady=10)
+        
+        # Name
+        self.name_label = tk.Label(
+            self.basic_info_frame, 
+            text="Recipe Name", 
+            font=("Helvetica", 12, "bold"), 
+            bg="#f5f5f5", 
+            fg="#333333"
+        )
+        self.name_label.pack(anchor="w", pady=(0, 5))
+        
+        self.name_entry = tk.Entry(
+            self.basic_info_frame, 
+            font=("Helvetica", 12), 
+            width=30, 
+            bd=2, 
+            relief=tk.SOLID
+        )
+        self.name_entry.pack(fill=tk.X, pady=(0, 15))
+        
+        # Category
+        self.category_label = tk.Label(
+            self.basic_info_frame, 
+            text="Category", 
+            font=("Helvetica", 12, "bold"), 
+            bg="#f5f5f5", 
+            fg="#333333"
+        )
+        self.category_label.pack(anchor="w", pady=(0, 5))
+        
+        self.category_options = ["Appetizer", "Main Course", "Dessert", "Beverage", "Snack", "Breakfast", "Lunch", "Dinner", "Salad", "Soup"]
+        self.category_dropdown = ttk.Combobox(
+            self.basic_info_frame,  
+            values=self.category_options,  
+            font=("Helvetica", 12),
+            state="readonly"  # Add this line to make it read-only
 
-    # Description
-        self.description_label = tk.Label(self.root, text="Description:",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
-        self.description_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
-        self.description_entry = tk.Text(self.root, height=6,font=("Helvetica" , 14), bg="#2c2c2c", fg="white")
-        self.description_entry.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
-        
-    #  Tags
-        self.tags_label = tk.Label(self.root, text="Tags:",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
-        self.tags_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
-        self.tags_entry = tk.Entry(self.root,font=("Helvetica" , 14),width=30, bg="#2c2c2c", fg="white")
-        self.tags_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
-        
-    #  Duration
-        self.duration_label = tk.Label(self.root, text="Duration (minutes):",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
-        self.duration_label.grid(row=3, column=0, padx=10, pady=5, sticky="w")
-        self.duration_entry = tk.Entry(self.root, validate="key", validatecommand=(self.root.register(self.validate_numeric_input), '%P'),font=("Helvetica" , 14),width=30, bg="#2c2c2c", fg="white")
-        self.duration_entry.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
-        
-    #  Rating
-        self.rating_label = tk.Label(self.root, text="Rating (1-5):",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
-        self.rating_label.grid(row=4, column=0, padx=10, pady=5, sticky="w")
-        self.rating_entry = tk.Entry(self.root, validate="key", validatecommand=(self.root.register(self.validate_rating_input), '%P'),font=("Helvetica" , 14),width=30, bg="#2c2c2c", fg="white")
-        self.rating_entry.grid(row=4, column=1, padx=10, pady=5, sticky="ew")
-        
-    #    Category
-        self.category_label = tk.Label(self.root, text="Category:",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
-        self.category_label.grid(row=5, column=0, padx=10, pady=5, sticky="w")
-        self.category_options = ["Appetizer", "Main Course", "Dessert", "Beverage", "Snack"]
-        self.category_dropdown = ttk.Combobox(self.root, values=self.category_options,font=("Helvetica", 14), width=27)
+        )
         self.category_dropdown.set("Select Category")
-        self.category_dropdown.grid(row=5, column=1, padx=10, pady=5, sticky="ew")  
-
-    # Ingredients
-        self.ingredient_label = tk.Label(self.root, text="Ingredients:",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
-        self.ingredient_label.grid(row=6, column=0, padx=10, pady=5, sticky="w")
-        self.ingredient_entry = tk.Text(self.root, height=4,font=("Helvetica", 14), bg="#2c2c2c", fg="white")
-        self.ingredient_entry.grid(row=6, column=1, padx=10, pady=5, sticky="ew")
-
-     # Image
-        self.image_label = tk.Label(self.root, text="No image selected",font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
-        self.image_label.grid(row=7, column=0, padx=10, pady=5, sticky="w")
-        self.image_button = tk.Button(self.root, text="Select Image", command=self.upload_image,font=("Helvetica", 14), bg="#d64444", fg="white", activebackground="#f46464", activeforeground="white")
-        self.image_button.grid(row=7, column=1, padx=10, pady=5, sticky="ew")
-
-    #  Submit Button
-        self.submit_button = tk.Button(self.root, text="Submit",font=("Helvetica", 24, "bold"), bg="#d64444", fg="white", padx=10, pady=10, command=self.insert_data, activebackground="#f46464", activeforeground="white")
-        self.submit_button.grid(row=8, column=0, columnspan=2, padx=10, pady=20)
-      
-        # Add style for combobox
-        style = ttk.Style()
-        style.configure('TCombobox', fieldbackground='#2c2c2c', background='#2c2c2c', foreground='white')
-
-# open file dialog to upload an image
+        self.category_dropdown.pack(fill=tk.X, pady=(0, 15))
+        
+        # Duration
+        self.duration_label = tk.Label(
+            self.basic_info_frame, 
+            text="Preparation Time (minutes)", 
+            font=("Helvetica", 12, "bold"), 
+            bg="#f5f5f5", 
+            fg="#333333"
+        )
+        self.duration_label.pack(anchor="w", pady=(0, 5))
+        
+        self.duration_entry = tk.Entry(
+            self.basic_info_frame, 
+            validate="key", 
+            validatecommand=(self.root.register(self.validate_numeric_input), '%P'), 
+            font=("Helvetica", 12), 
+            bd=2, 
+            relief=tk.SOLID
+        )
+        self.duration_entry.pack(fill=tk.X, pady=(0, 15))
+        
+        # Rating
+        self.rating_label = tk.Label(
+            self.basic_info_frame, 
+            text="Rating (1-5)", 
+            font=("Helvetica", 12, "bold"), 
+            bg="#f5f5f5", 
+            fg="#333333"
+        )
+        self.rating_label.pack(anchor="w", pady=(0, 5))
+        
+        self.rating_frame = tk.Frame(self.basic_info_frame, bg="#f5f5f5")
+        self.rating_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        self.rating_var = tk.IntVar()
+        self.rating_var.set(0)
+        
+        # Star rating system
+        for i in range(5):
+            star_btn = tk.Radiobutton(
+                self.rating_frame, 
+                text="★", 
+                variable=self.rating_var, 
+                value=i+1, 
+                indicatoron=0, 
+                font=("Helvetica", 16), 
+                bg="#f5f5f5", 
+                fg="#999999", 
+                activebackground="#f5f5f5", 
+                activeforeground="#FF5252",
+                selectcolor="#f5f5f5",
+                bd=0, 
+                highlightthickness=0,
+                command=self.update_stars
+            )
+            star_btn.pack(side=tk.LEFT)
+        
+        # Tags
+        self.tags_label = tk.Label(
+            self.basic_info_frame, 
+            text="Tags (comma separated)", 
+            font=("Helvetica", 12, "bold"), 
+            bg="#f5f5f5", 
+            fg="#333333"
+        )
+        self.tags_label.pack(anchor="w", pady=(0, 5))
+        
+        self.tags_entry = tk.Entry(
+            self.basic_info_frame, 
+            font=("Helvetica", 12), 
+            bd=2, 
+            relief=tk.SOLID
+        )
+        self.tags_entry.pack(fill=tk.X, pady=(0, 15))
+        
+    def create_description_fields(self):
+        # Description section
+        self.description_frame = tk.LabelFrame(
+            self.right_frame, 
+            text="Recipe Details", 
+            font=("Helvetica", 14, "bold"), 
+            bg="#f5f5f5", 
+            fg="#333333",
+            padx=15,
+            pady=15
+        )
+        self.description_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+        
+        # Description
+        self.description_label = tk.Label(
+            self.description_frame, 
+            text="Description", 
+            font=("Helvetica", 12, "bold"), 
+            bg="#f5f5f5", 
+            fg="#333333"
+        )
+        self.description_label.pack(anchor="w", pady=(0, 5))
+        
+        self.description_entry = scrolledtext.ScrolledText(
+            self.description_frame, 
+            height=5, 
+            font=("Helvetica", 12), 
+            bd=2, 
+            relief=tk.SOLID, 
+            wrap=tk.WORD
+        )
+        self.description_entry.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        
+        # Ingredients
+        self.ingredient_label = tk.Label(
+            self.description_frame, 
+            text="Ingredients (one per line)", 
+            font=("Helvetica", 12, "bold"), 
+            bg="#f5f5f5", 
+            fg="#333333"
+        )
+        self.ingredient_label.pack(anchor="w", pady=(0, 5))
+        
+        self.ingredient_entry = scrolledtext.ScrolledText(
+            self.description_frame, 
+            height=8, 
+            font=("Helvetica", 12), 
+            bd=2, 
+            relief=tk.SOLID, 
+            wrap=tk.WORD
+        )
+        self.ingredient_entry.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        
+    def create_image_section(self):
+        # Image section - improved to show image better
+        self.image_frame = tk.LabelFrame(
+            self.left_frame, 
+            text="Recipe Image", 
+            font=("Helvetica", 14, "bold"), 
+            bg="#f5f5f5", 
+            fg="#333333",
+            padx=15,
+            pady=15
+        )
+        self.image_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+        
+        # Image container with fixed size for consistency
+        self.image_container = tk.Frame(
+            self.image_frame, 
+            bg="#f0f0f0", 
+            width=300, 
+            height=300
+        )
+        self.image_container.pack(pady=10)
+        self.image_container.pack_propagate(False)  # Prevent resizing
+        
+        # Image preview with better placement
+        self.image_preview = tk.Label(
+            self.image_container, 
+            text="No image selected", 
+            font=("Helvetica", 12), 
+            bg="#f0f0f0"
+        )
+        self.image_preview.pack(fill=tk.BOTH, expand=True)
+        
+        # Button container
+        self.image_button_frame = tk.Frame(self.image_frame, bg="#f5f5f5")
+        self.image_button_frame.pack(fill=tk.X, pady=5)
+        
+        # Image button
+        self.image_button = tk.Button(
+            self.image_button_frame, 
+            text="Select Image", 
+            command=self.upload_image, 
+            font=("Helvetica", 12), 
+            bg="#FF5252", 
+            fg="white", 
+            activebackground="#FF7676", 
+            activeforeground="white",
+            bd=0,
+            padx=15,
+            pady=8,
+            cursor="hand2"
+        )
+        self.image_button.pack(pady=5)
+        
+    def create_action_buttons(self):
+        # Buttons frame
+        self.button_frame = tk.Frame(self.main_frame, bg="#f5f5f5", pady=15)
+        self.button_frame.pack(fill=tk.X)
+        
+        # Clear button
+        self.clear_button = tk.Button(
+            self.button_frame, 
+            text="Clear Form", 
+            command=self.clear_form, 
+            font=("Helvetica", 14), 
+            bg="#9E9E9E", 
+            fg="white", 
+            activebackground="#BDBDBD", 
+            activeforeground="white",
+            bd=0,
+            padx=20,
+            pady=10,
+            cursor="hand2"
+        )
+        self.clear_button.pack(side=tk.LEFT, padx=10)
+        
+        # Submit button
+        self.submit_button = tk.Button(
+            self.button_frame, 
+            text="Save Recipe", 
+            command=self.insert_data, 
+            font=("Helvetica", 14, "bold"), 
+            bg="#FF5252", 
+            fg="white", 
+            activebackground="#FF7676", 
+            activeforeground="white",
+            bd=0,
+            padx=20,
+            pady=10,
+            cursor="hand2"
+        )
+        self.submit_button.pack(side=tk.RIGHT, padx=10)
+        
+        # Status bar
+        self.status_bar = tk.Label(
+            self.main_frame, 
+            text="Ready", 
+            bd=1, 
+            relief=tk.SUNKEN, 
+            anchor=tk.W, 
+            font=("Helvetica", 10), 
+            bg="#f0f0f0", 
+            fg="#555555",
+            padx=10
+        )
+        self.status_bar.pack(fill=tk.X, side=tk.BOTTOM, pady=(10, 0))
+    
+    def update_stars(self):
+        rating = self.rating_var.get()
+        for i, widget in enumerate(self.rating_frame.winfo_children()):
+            if i < rating:
+                widget.config(fg="#FF5252")  # Filled star
+            else:
+                widget.config(fg="#999999")  # Empty star
+    
+    def clear_form(self):
+        # Clear all form fields
+        self.name_entry.delete(0, tk.END)
+        self.description_entry.delete("1.0", tk.END)
+        self.tags_entry.delete(0, tk.END)
+        self.duration_entry.delete(0, tk.END)
+        self.rating_var.set(0)
+        self.update_stars()
+        self.category_dropdown.set("Select Category")
+        self.ingredient_entry.delete("1.0", tk.END)
+        
+        # Reset image preview
+        self.image_data = None
+        self.image_path = None
+        self.image_preview.config(image="", text="No image selected")
+        
+        # Update status
+        self.status_bar.config(text="Form cleared")
+    
     def upload_image(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Image Files", ".png;.jpg;.jpeg;.gif")])
+        file_path = filedialog.askopenfilename(
+            filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")],
+            title="Select Recipe Image"
+        )
+        
         if file_path:
             try:
+                # Store the file path
+                self.image_path = file_path
+                
+                # Read image data for database storage
                 with open(file_path, 'rb') as file:
                     self.image_data = file.read()
-            
-                # Load the original image
+                
+                # Create a preview
                 original_image = Image.open(file_path)
-                image = original_image.resize((400, 400))
-                img_tk = ImageTk.PhotoImage(image)
-            
-                self.image_label.config(image=img_tk, text="")
-                self.image_label.image = img_tk #keep a reference
-            
+                
+                # Get container size for proper resizing
+                container_width = self.image_container.winfo_width() or 300
+                container_height = self.image_container.winfo_height() or 300
+                
+                # Calculate aspect ratio and resize while maintaining aspect ratio
+                width, height = original_image.size
+                
+                # Calculate the scaling factor to fit inside the container
+                scale = min(container_width/width, container_height/height)
+                new_size = (int(width * scale), int(height * scale))
+                
+                # Resize the image with high quality
+                resized_image = original_image.resize(new_size, Image.LANCZOS)
+                self.preview_image = ImageTk.PhotoImage(resized_image)
+                
+                # Update preview
+                self.image_preview.config(image=self.preview_image, text="")
+                
+                # Update status
+                filename = os.path.basename(file_path)
+                self.status_bar.config(text=f"Image selected: {filename}")
+                
             except Exception as e:
-                messagebox.showerror("Error", f"Failed to read image: {e}")
-
-
-# Establish connection to the database
+                messagebox.showerror("Error", f"Failed to load image: {e}")
+                self.status_bar.config(text="Error loading image")
+    
+    # Database connection - maintaining compatibility with original code
     def connect_to_database(self):
         try:
             conn = mysql.connector.connect(
-                host ="localhost",
-                user = "root",
-                password ="password123",
-                database ="cookbook"
+                host="localhost",
+                user="root",
+                password="password123",
+                database="cookbook"
             )
             return conn
         except mysql.connector.Error as err:
-            messagebox.showerror("Database Error",f"failed to connect: {err}")
+            messagebox.showerror("Database Error", f"Failed to connect: {err}")
+            self.status_bar.config(text="Database connection failed")
             return None
-
-# Insert from data into the database
-
+    
+    def validate_form(self):
+        # Check recipe name
+        if not self.name_entry.get().strip():
+            messagebox.showwarning("Input Error", "A name is necessary")
+            self.name_entry.focus_set()
+            return False
+        
+        # Check category
+        if self.category_dropdown.get() == "Select Category":
+            messagebox.showwarning("Input Error", "A category is necessary")
+            self.category_dropdown.focus_set()
+            return False
+        
+        # Check preparation time
+        if not self.duration_entry.get().strip():
+            messagebox.showwarning("Input Error", "A preparation time is necessary")
+            self.duration_entry.focus_set()
+            return False
+        
+        # Check rating
+        if self.rating_var.get() == 0:
+            messagebox.showwarning("Input Error", "A rating is necessary")
+            return False
+        
+        # Check tags
+        if not self.tags_entry.get().strip():
+            messagebox.showwarning("Input Error", "Tags are necessary")
+            self.tags_entry.focus_set()
+            return False
+        
+        # Check image
+        if not self.image_data:
+            messagebox.showwarning("Input Error", "An image is necessary")
+            return False
+        
+        # Check description
+        if not self.description_entry.get("1.0", tk.END).strip():
+            messagebox.showwarning("Input Error", "A description is necessary")
+            self.description_entry.focus_set()
+            return False
+        
+        # Check ingredients
+        if not self.ingredient_entry.get("1.0", tk.END).strip():
+            messagebox.showwarning("Input Error", "Ingredients are necessary")
+            self.ingredient_entry.focus_set()
+            return False
+        
+        return True
+    
+    # Insert data function - updated with comprehensive validation
     def insert_data(self):
-        name = self.name_entry.get()
-        if not name:
-            messagebox.showwarning("Name is requred")
+        # Validate all required fields before proceeding
+        if not self.validate_form():
             return
-
+            
+        # Get values from form elements
+        name = self.name_entry.get().strip()
         description = self.description_entry.get("1.0", tk.END).strip()
-        tags = self.tags_entry.get()
-        duration = self.duration_entry.get()
-        rating = self.rating_entry.get()
+        tags = self.tags_entry.get().strip()
+        duration = self.duration_entry.get().strip()
+        rating = str(self.rating_var.get())
         category = self.category_dropdown.get()
         ingredient = self.ingredient_entry.get("1.0", tk.END).strip()
         
-        if not self.image_data:
-            messagebox.showwarning("Input Error", "Please select an image") 
-            return
-    
-# connect to the database
+        # Connect to the database
         conn = self.connect_to_database()
         if conn:
             cursor = conn.cursor()
@@ -150,18 +597,21 @@ class CookbookAPP:
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''', (name, description, tags, duration, rating, category, ingredient, self.image_data, 1))
                 conn.commit()
-                messagebox.showinfo("Success", "Data inserted successfully")
+                messagebox.showinfo("Success", "Recipe saved successfully")
+                
+                # Clear form after successful save
+                self.clear_form()
+                self.status_bar.config(text="Recipe saved successfully")
+                
             except mysql.connector.Error as err:
-                messagebox.showerror("SQL Error", f"Failed to insert data: {err}")
+                messagebox.showerror("SQL Error", f"Failed to save recipe: {err}")
+                self.status_bar.config(text="Error saving recipe")
             finally:
                 conn.close()
 
-
-# Create the main window
-root = tk.Tk()
-root.configure(bg="#1c1c1c")  # Set the root window background
-app = CookbookAPP(root)
-
-root.state("zoomed")
-# Start the main loop
-root.mainloop()
+# Application entry point
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.geometry("1000x800")  # Set initial window size
+    app = ModernCookbookApp(root)
+    root.mainloop()
