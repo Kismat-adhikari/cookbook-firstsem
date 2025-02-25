@@ -47,12 +47,18 @@ def upload_image():
         except Exception as e:
             messagebox.showerror("Error", f"Failed to read image: {e}")
             
-def store_data(fullname_entry, username_entry, email_entry, age_entry, phone_entry, experience, cook_type, password_entry):
-    # Basic validation
+def store_data(fullname_entry, username_entry, email_entry, age_entry, phone_entry, experience, cook_type, password_entry, confirm_password_entry, error_label):
+    # to verify data is not being repeated
     if not fullname_entry.get() or not username_entry.get() or not email_entry.get() or not password_entry.get():
         messagebox.showerror("Error", "Please fill in all required fields")
         return
-        
+    
+    if password_entry.get() != confirm_password_entry.get():
+        error_label.config(text="Passwords do not match!")  
+        return
+
+    error_label.config(text="")
+
     connection = connect()
     if connection:
         cursor = connection.cursor()
@@ -175,7 +181,7 @@ def switch_to_signup():
     right_column = tk.Frame(fields_frame, bg="#1c1c1c")
     right_column.pack(side="right", fill="both", expand=True, padx=(10, 0))
     
-    fields_right = [("Phone", None), ("Password", ""), ("Confirm Password", "")]
+    fields_right = [("Phone", None), ("Password", "*"), ("Confirm Password", "*")]
     entries_right = []
     
     for field, show in fields_right:
@@ -188,6 +194,8 @@ def switch_to_signup():
             entry.config(show=show)
         entry.pack(fill="x", ipady=4)
         entries_right.append(entry)
+    error_label = tk.Label(signup_frame, text="", font=("Arial", 12), bg="#1c1c1c", fg="red")
+    error_label.pack(fill="x", pady=(5, 10))
     
     phone_entry, password_entry, confirm_password_entry = entries_right
 
@@ -240,7 +248,7 @@ def switch_to_signup():
     
     signup_button = tk.Button(button_frame, text="Sign Up", 
                               command=lambda: store_data(fullname_entry, username_entry, email_entry, age_entry, 
-                                                         phone_entry, experience, cook_type, password_entry),
+                                                         phone_entry, experience, cook_type, password_entry, confirm_password_entry, error_label),
                               bg="#f46464", fg="white", font=("Arial", 14, "bold"), padx=15, pady=8)
     signup_button.pack(fill="x", pady=(0, 10))
     
