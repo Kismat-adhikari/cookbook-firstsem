@@ -112,11 +112,11 @@ def switch_to_signup():
         widget.destroy()
 
     # Create a canvas with scrollbar for scrolling
-    canvas = tk.Canvas(main_frame, bg="#f0f0f0")
+    canvas = tk.Canvas(main_frame, bg="#1c1c1c")
     scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
     
     # Configure the scrollable frame
-    scrollable_frame = tk.Frame(canvas, bg="#f0f0f0")
+    scrollable_frame = tk.Frame(canvas, bg="#1c1c1c")
     scrollable_frame.bind(
         "<Configure>",
         lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
@@ -134,36 +134,36 @@ def switch_to_signup():
     main_frame.bind("<Configure>", lambda e: canvas.configure(width=e.width-20))  # 20 px for scrollbar
 
     # Create a frame with padding and border for better visibility
-    signup_frame = tk.Frame(scrollable_frame, bg="white", bd=1, relief="solid")
+    signup_frame = tk.Frame(scrollable_frame, bg="#1c1c1c", bd=1, relief="solid")
     signup_frame.pack(padx=40, pady=40, fill="both", expand=True)
 
     # Header with better spacing
-    header_frame = tk.Frame(signup_frame, bg="white")
+    header_frame = tk.Frame(signup_frame, bg="#1c1c1c")
     header_frame.pack(fill="x", pady=20)
     
-    tk.Label(header_frame, text="Create a New Account", font=("Arial", 24, "bold"), bg="white", fg="#4CAF50").pack()
+    tk.Label(header_frame, text="Create a New Account", font=("Arial", 24, "bold"), bg="#1c1c1c", fg="#f46464").pack()
 
     # Create a container for form fields
-    form_frame = tk.Frame(signup_frame, bg="white")
+    form_frame = tk.Frame(signup_frame, bg="#1c1c1c")
     form_frame.pack(fill="both", expand=True, padx=30, pady=10)
 
     # Fields with better spacing and alignment
-    fields_frame = tk.Frame(form_frame, bg="white")
+    fields_frame = tk.Frame(form_frame, bg="#1c1c1c")
     fields_frame.pack(fill="both", expand=True)
 
-      # Left column - Personal info
-    left_column = tk.Frame(fields_frame, bg="white")
+    # Left column - Personal info
+    left_column = tk.Frame(fields_frame, bg="#1c1c1c")
     left_column.pack(side="left", fill="both", expand=True, padx=(0, 10))
     
     fields_left = [("Full Name", None), ("Username", None), ("Email", None), ("Age", None)]
     entries_left = []
     
     for field, show in fields_left:
-        field_frame = tk.Frame(left_column, bg="white")
+        field_frame = tk.Frame(left_column, bg="#1c1c1c")
         field_frame.pack(fill="x", pady=8)
         
-        tk.Label(field_frame, text=field, font=("Arial", 12), bg="white", anchor="w").pack(anchor="w", pady=(0, 2))
-        entry = tk.Entry(field_frame, font=("Arial", 12), width=25, bd=1, relief="solid")
+        tk.Label(field_frame, text=field, font=("Arial", 12), bg="#1c1c1c", fg="white", anchor="w").pack(anchor="w", pady=(0, 2))
+        entry = tk.Entry(field_frame, font=("Arial", 12), width=25, bd=1, relief="solid", bg="#333333", fg="white", insertbackground="white")
         if show:
             entry.config(show=show)
         entry.pack(fill="x", ipady=4)
@@ -172,18 +172,18 @@ def switch_to_signup():
     fullname_entry, username_entry, email_entry, age_entry = entries_left
 
     # Right column - Account info
-    right_column = tk.Frame(fields_frame, bg="white")
+    right_column = tk.Frame(fields_frame, bg="#1c1c1c")
     right_column.pack(side="right", fill="both", expand=True, padx=(10, 0))
     
     fields_right = [("Phone", None), ("Password", ""), ("Confirm Password", "")]
     entries_right = []
     
     for field, show in fields_right:
-        field_frame = tk.Frame(right_column, bg="white")
+        field_frame = tk.Frame(right_column, bg="#1c1c1c")
         field_frame.pack(fill="x", pady=8)
         
-        tk.Label(field_frame, text=field, font=("Arial", 12), bg="white", anchor="w").pack(anchor="w", pady=(0, 2))
-        entry = tk.Entry(field_frame, font=("Arial", 12), width=25, bd=1, relief="solid")
+        tk.Label(field_frame, text=field, font=("Arial", 12), bg="#1c1c1c", fg="white", anchor="w").pack(anchor="w", pady=(0, 2))
+        entry = tk.Entry(field_frame, font=("Arial", 12), width=25, bd=1, relief="solid", bg="#333333", fg="white", insertbackground="white")
         if show:
             entry.config(show=show)
         entry.pack(fill="x", ipady=4)
@@ -192,60 +192,60 @@ def switch_to_signup():
     phone_entry, password_entry, confirm_password_entry = entries_right
 
     # Experience dropdown
-    exp_frame = tk.Frame(left_column, bg="white")
+    exp_frame = tk.Frame(left_column, bg="#1c1c1c")
     exp_frame.pack(fill="x", pady=8)
     
-    tk.Label(exp_frame, text="Experience (years)", font=("Arial", 12), bg="white").pack(anchor="w", pady=(0, 2))
+    tk.Label(exp_frame, text="Experience (years)", font=("Arial", 12), bg="#1c1c1c", fg="white").pack(anchor="w", pady=(0, 2))
     experience = ttk.Combobox(exp_frame, values=["<1 year"] + [str(i) for i in range(1, 51)], state="readonly", font=("Arial", 11))
     experience.pack(fill="x", ipady=3)
     experience.current(0)
 
     # Cook type dropdown
-    cook_frame = tk.Frame(right_column, bg="white")
+    cook_frame = tk.Frame(right_column, bg="#1c1c1c")
     cook_frame.pack(fill="x", pady=8)
     
-    tk.Label(cook_frame, text="Cook Type", font=("Arial", 12), bg="white").pack(anchor="w", pady=(0, 2))
+    tk.Label(cook_frame, text="Cook Type", font=("Arial", 12), bg="#1c1c1c", fg="white").pack(anchor="w", pady=(0, 2))
     cook_type = ttk.Combobox(cook_frame, values=["Vegetarian", "Non-Vegetarian", "Vegan", "Dessert Specialist"], state="readonly", font=("Arial", 11))
     cook_type.pack(fill="x", ipady=3)
 
     # Profile picture section - Improved layout for bigger image
-    pic_frame = tk.Frame(signup_frame, bg="white")
+    pic_frame = tk.Frame(signup_frame, bg="#1c1c1c")
     pic_frame.pack(fill="x", padx=30, pady=10)
     
-    pic_header = tk.Label(pic_frame, text="Profile Picture", font=("Arial", 12, "bold"), bg="white")
+    pic_header = tk.Label(pic_frame, text="Profile Picture", font=("Arial", 12, "bold"), bg="#1c1c1c", fg="white")
     pic_header.pack(anchor="w", pady=(10, 5))
     
-    pic_content = tk.Frame(pic_frame, bg="white")
+    pic_content = tk.Frame(pic_frame, bg="#1c1c1c")
     pic_content.pack(fill="x")
     
     # Left side - button
-    upload_section = tk.Frame(pic_content, bg="white")
+    upload_section = tk.Frame(pic_content, bg="#1c1c1c")
     upload_section.pack(side="left", padx=(0, 20))
     
     upload_photo_button = tk.Button(upload_section, text="Upload Profile Picture", command=upload_image, 
-                                    bg="#4CAF50", fg="white", font=("Arial", 12), padx=10, pady=5)
+                                    bg="#f46464", fg="white", font=("Arial", 12), padx=10, pady=5)
     upload_photo_button.pack(pady=10)
     
     # Right side - image preview (improved for actual pixel dimensions)
-    preview_section = tk.Frame(pic_content, bg="white")
+    preview_section = tk.Frame(pic_content, bg="#1c1c1c")
     preview_section.pack(side="right", padx=(20, 0))
 
     # Don't specify width/height in character units
-    label_image = tk.Label(preview_section, bg="#f0f0f0", text="Image Preview")
+    label_image = tk.Label(preview_section, bg="#333333", fg="white", text="Image Preview")
     label_image.pack(pady=10)
 
     # Buttons section with better spacing
-    button_frame = tk.Frame(signup_frame, bg="white")
+    button_frame = tk.Frame(signup_frame, bg="#1c1c1c")
     button_frame.pack(fill="x", padx=30, pady=20)
     
     signup_button = tk.Button(button_frame, text="Sign Up", 
                               command=lambda: store_data(fullname_entry, username_entry, email_entry, age_entry, 
                                                          phone_entry, experience, cook_type, password_entry),
-                              bg="#4CAF50", fg="white", font=("Arial", 14, "bold"), padx=15, pady=8)
+                              bg="#f46464", fg="white", font=("Arial", 14, "bold"), padx=15, pady=8)
     signup_button.pack(fill="x", pady=(0, 10))
     
     login_button = tk.Button(button_frame, text="Back to Login", command=switch_to_login, 
-                             bg="#e0e0e0", fg="#333", font=("Arial", 12), padx=10, pady=5)
+                             bg="#444444", fg="white", font=("Arial", 12), padx=10, pady=5)
     login_button.pack(fill="x")
 
     # Enable mousewheel scrolling
@@ -259,48 +259,48 @@ def switch_to_login():
     for widget in main_frame.winfo_children():
         widget.destroy()
 
-    main_frame.configure(bg="#f0f0f0")
+    main_frame.configure(bg="#1c1c1c")
 
     # Create a frame with padding and border for better visibility
-    login_frame = tk.Frame(main_frame, bg="white", bd=1, relief="solid")
+    login_frame = tk.Frame(main_frame, bg="#1c1c1c", bd=1, relief="solid")
     login_frame.pack(padx=40, pady=40, fill="both", expand=True)
 
     # Header with better spacing
-    header_frame = tk.Frame(login_frame, bg="white")
+    header_frame = tk.Frame(login_frame, bg="#1c1c1c")
     header_frame.pack(fill="x", pady=25)
     
-    tk.Label(header_frame, text="Login", font=("Arial", 24, "bold"), bg="white", fg="#4CAF50").pack()
+    tk.Label(header_frame, text="Login", font=("Arial", 24, "bold"), bg="#1c1c1c", fg="#f46464").pack()
 
     # Form fields with better spacing
-    form_frame = tk.Frame(login_frame, bg="white")
+    form_frame = tk.Frame(login_frame, bg="#1c1c1c")
     form_frame.pack(fill="both", expand=True, padx=40, pady=20)
     
     # Username/Email field
-    username_frame = tk.Frame(form_frame, bg="white")
+    username_frame = tk.Frame(form_frame, bg="#1c1c1c")
     username_frame.pack(fill="x", pady=12)
     
-    tk.Label(username_frame, text="Username or Email", font=("Arial", 12), bg="white").pack(anchor="w", pady=(0, 3))
-    username_email_entry = tk.Entry(username_frame, font=("Arial", 12), width=30, bd=1, relief="solid")
+    tk.Label(username_frame, text="Username or Email", font=("Arial", 12), bg="#1c1c1c", fg="white").pack(anchor="w", pady=(0, 3))
+    username_email_entry = tk.Entry(username_frame, font=("Arial", 12), width=30, bd=1, relief="solid", bg="#333333", fg="white", insertbackground="white")
     username_email_entry.pack(fill="x", ipady=5)
 
     # Password field
-    password_frame = tk.Frame(form_frame, bg="white")
+    password_frame = tk.Frame(form_frame, bg="#1c1c1c")
     password_frame.pack(fill="x", pady=12)
     
-    tk.Label(password_frame, text="Password", font=("Arial", 12), bg="white").pack(anchor="w", pady=(0, 3))
-    password_entry = tk.Entry(password_frame, show="*", font=("Arial", 12), width=30, bd=1, relief="solid")
+    tk.Label(password_frame, text="Password", font=("Arial", 12), bg="#1c1c1c", fg="white").pack(anchor="w", pady=(0, 3))
+    password_entry = tk.Entry(password_frame, show="*", font=("Arial", 12), width=30, bd=1, relief="solid", bg="#333333", fg="white", insertbackground="white")
     password_entry.pack(fill="x", ipady=5)
 
     # Buttons with better spacing and colors
-    button_frame = tk.Frame(login_frame, bg="white")
+    button_frame = tk.Frame(login_frame, bg="#1c1c1c")
     button_frame.pack(fill="x", padx=40, pady=30)
     
     login_button = tk.Button(button_frame, text="Login", command=lambda: check_login(username_email_entry, password_entry), 
-                             bg="#4CAF50", fg="white", font=("Arial", 14, "bold"), padx=15, pady=8)
+                             bg="#f46464", fg="white", font=("Arial", 14, "bold"), padx=15, pady=8)
     login_button.pack(fill="x", pady=(0, 10))
     
     signup_button = tk.Button(button_frame, text="Sign Up", command=switch_to_signup, 
-                              bg="#e0e0e0", fg="#333", font=("Arial", 12), padx=10, pady=5)
+                              bg="#444444", fg="white", font=("Arial", 12), padx=10, pady=5)
     signup_button.pack(fill="x")
 
 # Initialize application
@@ -318,7 +318,7 @@ y = (screen_height - window_height) // 2
 root.state("zoomed")# do not change this line
 
 # Create main frame with better background
-main_frame = tk.Frame(root, bg="#f0f0f0")
+main_frame = tk.Frame(root, bg="#1c1c1c")
 main_frame.pack(expand=True, fill="both")
 
 # Start with login screen
