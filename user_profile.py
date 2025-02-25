@@ -55,7 +55,7 @@ def display_profile(id):
             image.putalpha(mask)
 
             border_size = 10
-            border_image = Image.new("RGBA", (image.size[0] + border_size, image.size[1] + border_size), (255, 255, 255, 255))
+            border_image = Image.new("RGBA", (image.size[0] + border_size, image.size[1] + border_size), (244, 100, 100, 255))
             border_image.paste(image, (border_size // 2, border_size // 2), image)
 
             img_tk = ImageTk.PhotoImage(border_image)
@@ -125,7 +125,7 @@ def display_posts(id):
             desc_label.pack(anchor="w", pady=(5, 10))
 
             # Uploaded by label, now inside the container
-            username_label = tk.Label(card, text="Uploaded by: Kathy", font=USERNAME_FONT, fg="#555", bg=BG_COLOR)
+            username_label = tk.Label(card, text="Uploaded by: Kathy", font=USERNAME_FONT, fg="#f46464", bg=BG_COLOR)
             username_label.pack(anchor="w")
 
             # Like button functionality
@@ -136,7 +136,7 @@ def display_posts(id):
                     like_btn["text"] = "❤ Like"
 
             # Like button
-            like_btn = tk.Button(card, text="❤ Like", font=ICON_FONT, fg="red", bg=BG_COLOR, bd=0, command=toggle_like)
+            like_btn = tk.Button(card, text="❤ Like", font=ICON_FONT, fg="#f46464", bg=BG_COLOR, bd=0, command=toggle_like)
             like_btn.pack(anchor="center", pady=(5, 0))
     except Error as e:
         print(f"Error :{e}")
@@ -150,22 +150,22 @@ def display_posts(id):
 # main root
 root = tk.Tk()
 root.title("User Profile")
-root.config(bg="#f5f5f5")
+root.config(bg="#1c1c1c")
 
 # Main Frame
-main_frame = tk.Frame(root, bg="#f0f0f0")
+main_frame = tk.Frame(root, bg="#1c1c1c")
 main_frame.pack(expand=True, fill="both")
 
 # Title Label
-title_label = tk.Label(main_frame, text="User Profile", font=("Helvetica", 24, "bold"), bg="#00796b", fg="white", padx=10, pady=10)
+title_label = tk.Label(main_frame, text="User Profile", font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
 title_label.pack(fill="x")
 
 # Create a canvas with scrollbar for scrolling
-canvas = tk.Canvas(main_frame, bg="#f0f0f0")
+canvas = tk.Canvas(main_frame, bg="#1c1c1c")
 scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
 
 # Configure the scrollable frame
-scrollable_frame = tk.Frame(canvas, bg="#f0f0f0")
+scrollable_frame = tk.Frame(canvas, bg="#1c1c1c")
 scrollable_frame.bind(
     "<Configure>",lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
 )
@@ -182,47 +182,47 @@ scrollbar.pack(side="right", fill="y")
 # main_frame.bind("<Configure>", lambda e: canvas.configure(width=e.width-20))
 
 # Frame for user info
-frame = tk.Frame(scrollable_frame, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=1)
+frame = tk.Frame(scrollable_frame, bg="#262626", padx=20, pady=20, relief="ridge", borderwidth=1)
 frame.pack(fill="x",expand=True)
 
 
 # profile picture with border
-label_image = tk.Label(frame, bg="#f7f7f7", relief="solid", bd=2)
+label_image = tk.Label(frame, bg="#1c1c1c", relief="solid", bd=2)
 label_image.grid(row=0, column=0, rowspan=5, padx=30)
 
-label_user_id = tk.Label(frame, text="Username: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_user_id = tk.Label(frame, text="Username: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
 label_user_id.grid(row=0, column=3, pady=5, padx=600)
 
-label_name = tk.Label(frame, text="Name: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_name = tk.Label(frame, text="Name: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
 label_name.grid(row=1, column=3, pady=5)
 
-label_email = tk.Label(frame, text="Email: ", font=("Arial", 16), bg="#ffffff", anchor="center",width=30)
+label_email = tk.Label(frame, text="Email: ", font=("Arial", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
 label_email.grid(row=2, column=3, pady=5)
 
-label_age = tk.Label(frame, text="Age: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_age = tk.Label(frame, text="Age: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
 label_age.grid(row=3, column=3, pady=5)
 
-label_phone_number = tk.Label(frame, text="Phone: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_phone_number = tk.Label(frame, text="Phone: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
 label_phone_number.grid(row=4, column=3, pady=5)
 
-label_cooking_type = tk.Label(frame, text="Cook Type: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_cooking_type = tk.Label(frame, text="Cook Type: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
 label_cooking_type.grid(row=5, column=3, pady=5)
 
-label_experience = tk.Label(frame, text="Experience: ", font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_experience = tk.Label(frame, text="Experience: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
 label_experience.grid(row=6, column=3, pady=5)
 
-label_bio = tk.Label(frame,text="bio: ",font=("Helvetica", 16), bg="#ffffff", anchor="center",width=30)
+label_bio = tk.Label(frame,text="bio: ",font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
 label_bio.grid(row=7, column=3, pady=5)
 
 #frame for user posts
-frame = tk.Frame(scrollable_frame, bg="#ffffff", padx=20, pady=20, relief="ridge", borderwidth=1)
+frame = tk.Frame(scrollable_frame, bg="#262626", padx=20, pady=20, relief="ridge", borderwidth=1)
 frame.pack(fill="x")
-posts_label = tk.Label(frame, text="User Posts:-", font=("Helvetica", 16, "bold"), bg="#ffffff", anchor="center",width=30)
+posts_label = tk.Label(frame, text="User Posts:-", font=("Helvetica", 16, "bold"), bg="#262626", fg="#f46464", anchor="center",width=30)
 posts_label.grid(row=0, column=0, pady=5)
 
 # Create a card container
-BG_COLOR = "#ffffff"
-TEXT_COLOR = "#333333"
+BG_COLOR = "#262626"
+TEXT_COLOR = "#ffffff"
 TITLE_FONT = ("Arial", 14, "bold")
 DESC_FONT = ("Arial", 10)
 ICON_FONT = ("Arial", 12)
