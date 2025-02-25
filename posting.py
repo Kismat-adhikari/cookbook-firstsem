@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 from PIL import Image, ImageTk
+import mysql.connector
 
 # Validation function to ensure only numbers 1-5 are entered for rating
 def validate_rating_input(P):
@@ -32,6 +33,62 @@ def select_image():
         image_label.config(image=img)
         image_label.image = img  # Keep a reference to avoid garbage collection
 
+        # store the image path
+        image_label.image_path = file_path
+
+#function to connect database
+def connect_to_database():
+    try:
+        conn= mysql.connector.connect(
+            host ="localhost",
+            user = "root",
+            password ="password123",
+            database ="cookbook"
+        )
+        return conn
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return None
+
+#function to insert data into the profile table
+def insert_data():
+    name = name_entry.get()
+    title = title_entry.get()
+    description = description_entry.get()
+    tags = tags_entry.get()
+    duration = duration_entry.get()
+    rating = rating_entry.get()
+    category = category_dropdown.get()
+    ingredient = ingredient_entry.get()
+    image_path = image_label.image_path if hasattr(image_label,'image_path') else None
+
+# connect to the database
+    conn = connect_to_database()
+    if conn:
+        cursor = conn.cursor()
+        
+        # Insert the data into the profiling table
+        cursor.execute('''
+            INSERT INTO profile (name,title, description, tags, duration, rating, category, ingredient, image_path)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        ''', (name,title, description, tags, duration, rating, category, ingredient, image_path))
+        
+        conn.commit()  # Save changes
+        conn.close()   # Close the connection
+        
+        # Clear form fields after submission
+        name_entry.delete(0,tk.END)
+        title_entry.delete(0, tk.END)
+        description_entry.delete(0, tk.END)
+        tags_entry.delete(0, tk.END)
+        duration_entry.delete(0, tk.END)
+        rating_entry.delete(0, tk.END)
+        category_dropdown.set("Select Category")
+        ingredient_entry.delete(0, tk.END)
+        image_label.config(image=None, text="No image selected")
+        print("Data inserted successfully!")
+
+
 # Create the main window
 root = tk.Tk()
 root.title("Simple Food Entry Form")
@@ -42,6 +99,12 @@ vcmd_numeric = (root.register(validate_numeric_input), '%P')
 vcmd_rating = (root.register(validate_rating_input), '%P')
 
 # Create and place labels, entry fields, dropdowns, and buttons
+
+# name
+name_label = tk.Label(root, text = "Name")
+name_label.pack(pady = 5)
+name_entry = tk.Entry(root)
+name_entry.pack(pady = 5)
 
 # Title
 title_label = tk.Label(root, text="Title:")
@@ -94,7 +157,7 @@ image_button = tk.Button(root, text="Select Image", command=select_image)
 image_button.pack(pady=5)
 
 # Submit Button
-submit_button = tk.Button(root, text="Submit")
+submit_button = tk.Button(root, text="Submit", command = insert_data)
 submit_button.pack(pady=20)
 
 # Fullscrean
