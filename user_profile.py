@@ -6,6 +6,7 @@ from PIL import Image, ImageTk, ImageDraw, ImageOps
 import sys
 import io
 
+main_id = None
 # Connect to MySQL database
 def connect():
     connection = mysql.connector.connect(
@@ -25,8 +26,8 @@ def display_profile(id):
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM profile WHERE id = %s", (id,))
         user = cursor.fetchone()
-        print(user)
         if user:
+            # Extract the user data
             user_id= user[0]
             full_name = user[1]
             username = user[2]
@@ -37,6 +38,10 @@ def display_profile(id):
             experience = user[8]
             profilePic = user[9]
             bio = user[10]
+
+            # asgining main_id
+            global main_id
+            main_id = user_id
 
             # to make profile image a circular with border(designs)
             image = Image.open(io.BytesIO(profilePic)).convert("RGBA")
@@ -72,6 +77,75 @@ def display_profile(id):
     except Error as e:
         print(f"Error :{e}")
         messagebox.showerror("Error", "Could not load profile Information.")
+
+def display_posts(id):
+    connection = connect()
+    cursor = None
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM posts WHERE user_id = %s", (id,))
+        posts = cursor.fetchall()
+        for post in posts:
+                print(post)
+        for post in posts:
+            # Create the card container
+            card = tk.Frame(frame, bg=BG_COLOR, padx=15, pady=15, relief="ridge", bd=2)
+            card.grid(row=1, column=0, pady=5)
+
+            # Title of the food item
+            title_label = tk.Label(card, text=post[0], font=TITLE_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+            title_label.pack(anchor="w", pady=(5, 2))
+
+            # Load and display the image below the title
+            image = Image.open("testimage.jpeg")
+            image = image.resize((100, 100))  # Resize the image as needed
+            photo = ImageTk.PhotoImage(image)
+            image_label = tk.Label(card, image=photo, bg=BG_COLOR)
+            image_label.pack(anchor="center", pady=(5, 10))
+
+            # Category label
+            category_label = tk.Label(card, text="Category: Main Course", font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+            category_label.pack(anchor="w")
+
+            # Rating label
+            rating_label = tk.Label(card, text="⭐ ⭐ ⭐ ⭐ ☆  (4/5)", font=ICON_FONT, fg="#FFD700", bg=BG_COLOR)
+            rating_label.pack(anchor="w")
+
+            # Duration label
+            duration_label = tk.Label(card, text="⏳ Duration: 30 min", font=ICON_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+            duration_label.pack(anchor="w")
+
+            # Tags label
+            tags_label = tk.Label(card, text="🏷 Tags: Italian, Pasta", font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+            tags_label.pack(anchor="w")
+
+            # Description label
+            desc_label = tk.Label(card, text="A classic spaghetti dish with tomato sauce, garlic, olive oil, and fresh herbs. Simple, delicious, and perfect for any occasion.",
+                                wraplength=400, font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR, justify="left")
+            desc_label.pack(anchor="w", pady=(5, 10))
+
+            # Uploaded by label, now inside the container
+            username_label = tk.Label(card, text="Uploaded by: Kathy", font=USERNAME_FONT, fg="#555", bg=BG_COLOR)
+            username_label.pack(anchor="w")
+
+            # Like button functionality
+            def toggle_like():
+                if like_btn["text"] == "❤ Like":
+                    like_btn["text"] = "💔 Unlike"
+                else:
+                    like_btn["text"] = "❤ Like"
+
+            # Like button
+            like_btn = tk.Button(card, text="❤ Like", font=ICON_FONT, fg="red", bg=BG_COLOR, bd=0, command=toggle_like)
+            like_btn.pack(anchor="center", pady=(5, 0))
+    except Error as e:
+        print(f"Error :{e}")
+        messagebox.showerror("Error", "Could not load profile Information.")
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
 # main root
 root = tk.Tk()
@@ -154,59 +228,17 @@ DESC_FONT = ("Arial", 10)
 ICON_FONT = ("Arial", 12)
 USERNAME_FONT = ("Arial", 10, "italic")
 
-# Create the card container
-card = tk.Frame(frame, bg=BG_COLOR, padx=15, pady=15, relief="ridge", bd=2)
-card.grid(row=1, column=0, pady=5)
 
-# Title of the food item
-title_label = tk.Label(card, text="Spaghetti", font=TITLE_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
-title_label.pack(anchor="w", pady=(5, 2))
 
-# Load and display the image below the title
-image = Image.open("testimage.jpeg")
-image = image.resize((100, 100))  # Resize the image as needed
-photo = ImageTk.PhotoImage(image)
-image_label = tk.Label(card, image=photo, bg=BG_COLOR)
-image_label.pack(anchor="center", pady=(5, 10))
+# Enable mousewheel scrolling
+def _on_mousewheel(event):
+    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
-# Category label
-category_label = tk.Label(card, text="Category: Main Course", font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
-category_label.pack(anchor="w")
-
-# Rating label
-rating_label = tk.Label(card, text="⭐ ⭐ ⭐ ⭐ ☆  (4/5)", font=ICON_FONT, fg="#FFD700", bg=BG_COLOR)
-rating_label.pack(anchor="w")
-
-# Duration label
-duration_label = tk.Label(card, text="⏳ Duration: 30 min", font=ICON_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
-duration_label.pack(anchor="w")
-
-# Tags label
-tags_label = tk.Label(card, text="🏷 Tags: Italian, Pasta", font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
-tags_label.pack(anchor="w")
-
-# Description label
-desc_label = tk.Label(card, text="A classic spaghetti dish with tomato sauce, garlic, olive oil, and fresh herbs. Simple, delicious, and perfect for any occasion.",
-                      wraplength=400, font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR, justify="left")
-desc_label.pack(anchor="w", pady=(5, 10))
-
-# Uploaded by label, now inside the container
-username_label = tk.Label(card, text="Uploaded by: Kathy", font=USERNAME_FONT, fg="#555", bg=BG_COLOR)
-username_label.pack(anchor="w")
-
-# Like button functionality
-def toggle_like():
-    if like_btn["text"] == "❤ Like":
-        like_btn["text"] = "💔 Unlike"
-    else:
-        like_btn["text"] = "❤ Like"
-
-# Like button
-like_btn = tk.Button(card, text="❤ Like", font=ICON_FONT, fg="red", bg=BG_COLOR, bd=0, command=toggle_like)
-like_btn.pack(anchor="center", pady=(5, 0))
+canvas.bind_all("<MouseWheel>", _on_mousewheel)
 
 print(sys.argv[1])
 display_profile(str(sys.argv[1]))
+display_posts(main_id)
 
 root.state("zoomed")
 root.mainloop()

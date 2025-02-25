@@ -1,6 +1,35 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import ttk
+import mysql.connector
+from mysql.connector import Error
+import io
+
+length_data = 0
+
+def connect():
+    try:
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="password123",
+            database="cookbook"
+        )
+        if connection.is_connected():
+            print("Connected to the database")
+            return connection
+    except Error as e:
+        print(e)
+
+def retrive_data(id):
+    global length_data
+    connection = connect()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM posts WHERE user_id = %s", (id,))
+    posts = cursor.fetchall()
+    length_data = len(posts)
+    return posts
+
 
 # Initialize the main window
 root = tk.Tk()
@@ -21,7 +50,8 @@ BODY_FONT = ("Segoe UI", 11)
 ICON_FONT = ("Segoe UI", 12)
 
 # Function to create a post
-def create_post(parent, title, author, description):
+def create_post(parent, title, author, description, image, category, tags, duration, ingredients, rating):
+
     # Create a card with better shadow effect
     post_container = tk.Frame(parent, bg="#f0f2f5", padx=10, pady=10)
     post_container.pack(fill="x")
@@ -54,7 +84,8 @@ def create_post(parent, title, author, description):
     
     try:
         # Try to load the actual image
-        image = Image.open("testimage.jpeg")
+        image = Image.open(io.BytesIO(image))
+        image = image.resize((400, 400))
     except:
         # Create a placeholder image if file not found
         image = Image.new('RGB', (600, 337), color=(233, 233, 233))
@@ -148,11 +179,11 @@ def create_post(parent, title, author, description):
             if like_button["text"] == "♡ Like":
                 like_button["text"] = "❤ Liked"
                 like_button["fg"] = ACCENT_COLOR
-                likes_count["text"] = "❤ 143 likes"
+                likes_count["text"] = f"❤ {likes_count} likes"
             else:
                 like_button["text"] = "♡ Like"
                 like_button["fg"] = TEXT_COLOR
-                likes_count["text"] = "❤ 142 likes"
+                likes_count["text"] = f"❤ {likes_count} likes"
         return toggle_like
     
     # Better styled buttons
@@ -194,18 +225,15 @@ canvas.configure(yscrollcommand=scrollbar.set)
 canvas.pack(side="left", fill="both", expand=True)
 scrollbar.pack(side="right", fill="y")
 
-# Create posts inside the scrollable frame
-for i in range(4):
-    if i == 0:
-        post = create_post(scrollable_frame, f'Post {i+1}', 'Author', 'Testing ho but desciption chai yo hunxaa')
-    elif i == 1:
-        post = create_post(scrollable_frame, f'Post {i+1}', 'Author', 'Another post ')
-    elif i == 2:
-        post = create_post(scrollable_frame, f'Post {i+1}', 'Author', 'This is the third post ')
-    else:
-        post = create_post(scrollable_frame, f'Post {i+1}', 'Author', 'This is the fourth post.')
+# Get the posts from the database
+posts = retrive_data(1)
+for post in posts:
+    post_id, name, detail, image, category, tags, duration, ingredient, rating, user_id = post
+    # Create posts inside the scrollable frame
+    post_frame = create_post(scrollable_frame, name, user_id, detail, image, category, tags, duration, ingredient, rating)
+    post_frame.pack(fill="x", pady=10)
     
-    post.pack(fill='x', pady=10)
+
 
 # Run the Tkinter main loop
 root.mainloop()

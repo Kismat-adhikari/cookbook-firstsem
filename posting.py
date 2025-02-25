@@ -612,6 +612,7 @@ class ModernCookbookApp:
 # Application entry point
 if __name__ == "__main__":
     root = tk.Tk()
+    root.state("zoomed")  # Maximize the window
     root.geometry("1000x800")  # Set initial window size
     app = ModernCookbookApp(root)
     root.mainloop()

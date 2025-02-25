@@ -22,7 +22,7 @@ def connect():
         messagebox.showerror("Database Error", f"Connection failed: {e}")
 
 def upload_image():
-    file_path = filedialog.askopenfilename(filetypes=[("Image Files", ".png;.jpg;.jpeg;.gif")])
+    file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")])
     if file_path:
         global image_data
         try:
