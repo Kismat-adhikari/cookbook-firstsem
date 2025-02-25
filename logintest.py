@@ -22,7 +22,7 @@ def connect():
         messagebox.showerror("Database Error", f"Connection failed: {e}")
 
 def upload_image():
-    file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")])
+    file_path = filedialog.askopenfilename(filetypes=[("Image Files", ".png;.jpg;.jpeg;.gif")])
     if file_path:
         global image_data
         try:
@@ -70,10 +70,15 @@ def store_data(fullname_entry, username_entry, email_entry, age_entry, phone_ent
             connection.close()
 
 def goto_profile(name):
-    try:
-        os.system(f'python user_profile.py {name}')
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to open profile page: {e}")
+    connection = connect() 
+    if connection:
+        cursor= connection.cursor()
+        try:
+            cursor.execute("SELECT id FROM profile WHERE name = %s", (name,))
+            id = cursor.fetchone()[0]
+            os.system(f'python user_profile.py {id}')
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open profile page: {e}")
 
 def check_login(username_email_entry, password_entry):
     if not username_email_entry.get() or not password_entry.get():
@@ -146,7 +151,7 @@ def switch_to_signup():
     fields_frame = tk.Frame(form_frame, bg="white")
     fields_frame.pack(fill="both", expand=True)
 
-    # Left column - Personal info
+      # Left column - Personal info
     left_column = tk.Frame(fields_frame, bg="white")
     left_column.pack(side="left", fill="both", expand=True, padx=(0, 10))
     
@@ -170,7 +175,7 @@ def switch_to_signup():
     right_column = tk.Frame(fields_frame, bg="white")
     right_column.pack(side="right", fill="both", expand=True, padx=(10, 0))
     
-    fields_right = [("Phone", None), ("Password", "*"), ("Confirm Password", "*")]
+    fields_right = [("Phone", None), ("Password", ""), ("Confirm Password", "")]
     entries_right = []
     
     for field, show in fields_right:
@@ -309,7 +314,8 @@ screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 x = (screen_width - window_width) // 2
 y = (screen_height - window_height) // 2
-root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+#zoom the windoiw to full screen
+root.state("zoomed")# do not change this line
 
 # Create main frame with better background
 main_frame = tk.Frame(root, bg="#f0f0f0")

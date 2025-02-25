@@ -13,8 +13,8 @@ def connection_create():
             cursor = connection.cursor()
             cursor.execute("CREATE DATABASE IF NOT EXISTS cookbook")
             cursor.execute("USE cookbook")
-            cursor.execute("DROP TABLE IF EXISTS profile")
             cursor.execute("DROP TABLE IF EXISTS posts")
+            cursor.execute("DROP TABLE IF EXISTS profile")
             cursor.execute('''CREATE TABLE IF NOT EXISTS profile (
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             name VARCHAR(50) NOT NULL,
@@ -30,12 +30,13 @@ def connection_create():
                             )''')
             cursor.execute('''CREATE TABLE IF NOT EXISTS posts (
                             id INT AUTO_INCREMENT PRIMARY KEY,
-                            title VARCHAR(100) NOT NULL,
-                            description TEXT,
+                            name VARCHAR(100) NOT NULL,
+                            detail TEXT,
                             image LONGBLOB,
                             category VARCHAR(50),
                             tags VARCHAR(100),
                             duration VARCHAR(50),
+                            ingredient TEXT,
                             rating INT,
                             user_id INT,
                             FOREIGN KEY (user_id) REFERENCES profile(id)
