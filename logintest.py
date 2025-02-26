@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 import mysql.connector
 import os
 import re
+import bcrypt
 
 image_data = None
 
@@ -72,12 +73,16 @@ def store_data(fullname_entry, username_entry, email_entry, age_entry, phone_ent
 
     error_label.config(text="")
 
+    hashed_password = bcrypt.hashpw(password_entry.get().encode('utf-8'), bcrypt.gensalt())
+    password_entry.delete(0, tk.END)
+    confirm_password_entry.delete(0, tk.END)
+
     connection = connect()
     if connection:
         cursor = connection.cursor()
         try:
             cursor.execute("INSERT INTO profile (name, username, email, age, phone_number, experience, cook_type, password, profile_pic) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", 
-                        (fullname_entry.get(), username_entry.get(), email_entry.get(), age_entry.get(), phone_entry.get(), experience.get(), cook_type.get(), password_entry.get(), image_data))
+                        (fullname_entry.get(), username_entry.get(), email_entry.get(), age_entry.get(), phone_entry.get(), experience.get(), cook_type.get(), hashed_password, image_data))
             connection.commit()
             messagebox.showinfo("Success", "Account created successfully!")
             name = fullname_entry.get()
@@ -112,8 +117,9 @@ def check_login(username_email_entry, password_entry):
                         (username_email_entry.get(), username_email_entry.get()))
             user = cursor.fetchone()
             if user:
-                name, password = user
-                if password == password_entry.get():
+                name = user[0]
+                password = user[1].encode()
+                if bcrypt.checkpw(password_entry.get().encode(), password):
                     root.destroy()
                     goto_profile(name)
                 else:

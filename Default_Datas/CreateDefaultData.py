@@ -19,7 +19,7 @@ def connection_create():
                             id INT AUTO_INCREMENT PRIMARY KEY,
                             name VARCHAR(50) NOT NULL,
                             username VARCHAR(50) NOT NULL,
-                            password VARCHAR(50) NOT NULL,
+                            password VARCHAR(300) NOT NULL,
                             phone_number VARCHAR(15),
                             email VARCHAR(100) NOT NULL,
                             age INT NOT NULL,

@@ -110,6 +110,12 @@ logout_btn.pack(side="right", padx=20, pady=10)
 # Function to create a post
 def create_post(parent, title, author, description, image, category, tags, duration, ingredients, rating):
 
+    # To get username
+    connection = connect()
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT username FROM profile WHERE id={author}")
+    author = cursor.fetchone()[0]
+
     # Create a card with better shadow effect
     post_container = tk.Frame(parent, bg=BG_DARK, padx=10, pady=10)
     post_container.pack(fill="x")
@@ -133,8 +139,6 @@ def create_post(parent, title, author, description, image, category, tags, durat
     
     username_label = tk.Label(profile_frame, text=f"Chef {author}", font=SUBTITLE_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
     username_label.pack(anchor="w")
-    time_label = tk.Label(profile_frame, text="Posted 2 hours ago", font=("Segoe UI", 9), fg="#a0a0a0", bg=BG_MEDIUM)
-    time_label.pack(anchor="w")
     
     # Image with better aspect ratio and centering
     image_frame = tk.Frame(main_frame, bg=BG_MEDIUM)
@@ -213,6 +217,12 @@ def create_post(parent, title, author, description, image, category, tags, durat
         tag_btn = tk.Label(tags_frame, text=f"#{tag}", font=("Segoe UI", 10), 
                           fg=ACCENT_COLOR, bg=f"#ffebee", padx=8, pady=2)
         tag_btn.pack(side="left", padx=(0, 8))
+
+    # Ingredients section with better layout
+    ingredients_frame = tk.Frame(main_frame, bg=BG_MEDIUM, padx=10, pady=12)
+    ingredients_frame.pack(fill="x")
+    ingredients_label = tk.Label(ingredients_frame, text=f"Ingredients:\n{ingredient}", font=SUBTITLE_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
+    ingredients_label.pack(anchor="w")
     
     return main_frame
 

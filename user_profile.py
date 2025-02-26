@@ -33,7 +33,7 @@ def display_profile(id):
             user_id= user[0]
             full_name = user[1]
             username = user[2]
-            age = user[3]
+            age = user[6]
             phone_number= user[4]
             email= user[5]
             cooking_type = user[7]
@@ -87,7 +87,6 @@ def display_profile(id):
             label_phone_number.config(text="Phone: " + phone_number)
             label_cooking_type.config(text="Cook Type: " + str(cooking_type))
             label_experience.config(text="Experience: " + str(experience))
-            label_bio.config(text="Bio: "+ str(bio))
             cursor.close()
             connection.close()
     except Error as e:
@@ -120,6 +119,12 @@ def display_posts(id):
 
     def create_post(parent, title, author, description, image, category, tags, duration, ingredients, rating):
 
+        # To get username
+        connection = connect()
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT username FROM profile WHERE id={author}")
+        author = cursor.fetchone()[0]
+
         # Create a card with better shadow effect
         post_container = tk.Frame(parent, bg=BG_DARK, padx=10, pady=10)
         post_container.pack(fill="x")
@@ -143,8 +148,6 @@ def display_posts(id):
         
         username_label = tk.Label(profile_frame, text=f"Chef {author}", font=SUBTITLE_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
         username_label.pack(anchor="w")
-        time_label = tk.Label(profile_frame, text="Posted 2 hours ago", font=("Segoe UI", 9), fg="#a0a0a0", bg=BG_MEDIUM)
-        time_label.pack(anchor="w")
         
         # Image with better aspect ratio and centering
         image_frame = tk.Frame(main_frame, bg=BG_MEDIUM)
@@ -223,6 +226,12 @@ def display_posts(id):
             tag_btn = tk.Label(tags_frame, text=f"#{tag}", font=("Segoe UI", 10), 
                             fg=ACCENT_COLOR, bg=f"#ffebee", padx=8, pady=2)
             tag_btn.pack(side="left", padx=(0, 8))
+
+        # Ingredients section with better layout
+        ingredients_frame = tk.Frame(main_frame, bg=BG_MEDIUM, padx=10, pady=12)
+        ingredients_frame.pack(fill="x")
+        ingredients_label = tk.Label(ingredients_frame, text=f"Ingredients:\n{ingredient}", font=SUBTITLE_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
+        ingredients_label.pack(anchor="w")
         
         return main_frame
 
@@ -231,8 +240,15 @@ def display_posts(id):
     for post in posts:
         post_id, name, detail, image, category, tags, duration, ingredient, rating, user_id = post
         # Create posts inside the scrollable frame
-        post_frame = create_post(scrollable_frame, name, user_id, detail, image, category, tags, duration, ingredient, rating)
-        post_frame.pack(fill="x", pady=10)
+        # Posts frame with improved styling
+        posts_frame = tk.Frame(scrollable_frame, bg="#262626", padx=30, pady=30, relief="flat")
+        posts_frame.pack(fill="x", expand=True, padx=20, pady=10)
+
+        posts_label = tk.Label(posts_frame, text="User Posts", font=("Segoe UI", 16, "bold"), bg="#262626", fg="#f46464", anchor="w")
+        posts_label.pack(pady=(0, 20), anchor="w")
+
+        create_post(posts_frame, name, user_id, detail, image, category, tags, duration, ingredient, rating)
+
 
 # Navbar function
 def open_feed():
@@ -330,15 +346,8 @@ label_cooking_type.grid(row=5, column=1, pady=5, sticky="w", padx=(20, 0))
 label_experience = tk.Label(user_info_frame, text="Experience: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w")
 label_experience.grid(row=6, column=1, pady=5, sticky="w", padx=(20, 0))
 
-label_bio = tk.Label(user_info_frame, text="Bio: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w")
-label_bio.grid(row=7, column=1, pady=5, sticky="w", padx=(20, 0))
 
-# Posts frame with improved styling
-posts_frame = tk.Frame(scrollable_frame, bg="#262626", padx=30, pady=30, relief="flat")
-posts_frame.pack(fill="x", expand=True, padx=20, pady=10)
 
-posts_label = tk.Label(posts_frame, text="User Posts", font=("Segoe UI", 16, "bold"), bg="#262626", fg="#f46464", anchor="w")
-posts_label.pack(pady=(0, 20), anchor="w")
 
 # Enable mousewheel scrolling
 def _on_mousewheel(event):
