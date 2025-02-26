@@ -1,13 +1,12 @@
 #this program should only be ran once to create database and tables.
 import mysql.connector
-from mysql.connector import Error   
-
+from mysql.connector import Error 
 def connection_create():
     try:
         connection=mysql.connector.connect(
             host='localhost',      
             user='root',    
-            password='password123' 
+            password='password123'
             )
         if connection.is_connected():   
             cursor = connection.cursor()

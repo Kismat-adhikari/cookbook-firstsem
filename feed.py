@@ -7,8 +7,6 @@ import io
 import os
 import sys
 
-length_data = 0
-
 def connect():
     try:
         connection = mysql.connector.connect(
@@ -56,7 +54,6 @@ def open_feed():
     except Exception as e:
         print(f"Error opening feed: {e}")
 
-
 def open_posting():
     try:
         user_id = sys.argv[1] if len(sys.argv) > 1 else '1'  # Default to user ID 1
@@ -64,7 +61,6 @@ def open_posting():
         os.system(f'python {os.path.join(os.path.dirname(__file__), "posting.py")} {user_id}')
     except Exception as e:
         print(f"Error opening posting: {e}")
-
 
 def open_profile():
     try:
@@ -74,14 +70,12 @@ def open_profile():
     except Exception as e:
         print(f"Error opening profile: {e}")
 
-
 def logout():
     try:
         root.destroy()
         os.system(f'python {os.path.join(os.path.dirname(__file__), "logintest.py")}')
     except Exception as e:
         print(f"Error logging out: {e}")
-
 
 # Initialize the main window
 root = tk.Tk()

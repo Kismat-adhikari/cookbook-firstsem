@@ -348,7 +348,7 @@ label_experience.grid(row=6, column=1, pady=5, sticky="w", padx=(20, 0))
 
 
 
-
+    
 # Enable mousewheel scrolling
 def _on_mousewheel(event):
     canvas.yview_scroll(int(-1*(event.delta/120)), "units")
