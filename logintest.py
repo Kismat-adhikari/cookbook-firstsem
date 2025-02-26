@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox, filedialog, scrolledtext
 from PIL import Image, ImageTk
 import mysql.connector
 import os
+import re
 
 image_data = None
 
@@ -47,12 +48,24 @@ def upload_image():
         except Exception as e:
             messagebox.showerror("Error", f"Failed to read image: {e}")
             
+def is_valid_email(email):
+    pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    return re.match(pattern, email)
+
 def store_data(fullname_entry, username_entry, email_entry, age_entry, phone_entry, experience, cook_type, password_entry, confirm_password_entry, error_label):
     # to verify data is not being repeated
     if not fullname_entry.get() or not username_entry.get() or not email_entry.get() or not password_entry.get():
         messagebox.showerror("Error", "Please fill in all required fields")
         return
     
+    if fullname_entry.get().istitle() == False:
+        error_label.config(text="Name must start with a capital letter!")
+        return
+    
+    if is_valid_email(email_entry.get()) == None:
+        error_label.config(text="Invalid email address!")
+        return
+
     if password_entry.get() != confirm_password_entry.get():
         error_label.config(text="Passwords do not match!")  
         return
