@@ -509,7 +509,7 @@ class ModernCookbookApp:
     
     def upload_image(self):
         file_path = filedialog.askopenfilename(
-            filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")],
+            filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.webp")],
             title="Select Recipe Image"
         )
         
@@ -629,6 +629,9 @@ class ModernCookbookApp:
         rating = str(self.rating_var.get())
         category = self.category_dropdown.get()
         ingredient = self.ingredient_entry.get("1.0", tk.END).strip()
+
+        if(len(sys.argv) > 1):
+            main_id = sys.argv[1]
         
         # Connect to the database
         conn = self.connect_to_database()
@@ -639,7 +642,7 @@ class ModernCookbookApp:
                 cursor.execute(''' 
                     INSERT INTO posts (name, detail, tags, duration, rating, category, ingredient, image, user_id)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ''', (name, description, tags, duration, rating, category, ingredient, self.image_data, 1))
+                ''', (name, description, tags, duration, rating, category, ingredient, self.image_data, main_id))
                 conn.commit()
                 messagebox.showinfo("Success", "Recipe saved successfully")
                 

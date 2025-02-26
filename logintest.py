@@ -23,7 +23,7 @@ def connect():
         messagebox.showerror("Database Error", f"Connection failed: {e}")
 
 def upload_image():
-    file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")])
+    file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.webp")])
     if file_path:
         global image_data
         try:
@@ -216,8 +216,8 @@ def switch_to_signup():
     exp_frame = tk.Frame(left_column, bg="#1c1c1c")
     exp_frame.pack(fill="x", pady=8)
     
-    tk.Label(exp_frame, text="Experience (years)", font=("Arial", 12), bg="#1c1c1c", fg="white").pack(anchor="w", pady=(0, 2))
-    experience = ttk.Combobox(exp_frame, values=["<1 year"] + [str(i) for i in range(1, 51)], state="readonly", font=("Arial", 11))
+    tk.Label(exp_frame, text="Experience", font=("Arial", 12), bg="#1c1c1c", fg="white").pack(anchor="w", pady=(0, 2))
+    experience = ttk.Combobox(exp_frame, values=["Less then 1 year"] + ["More then 1 years"] + ["More then 3 years"] + ["More then 5 years"] + ["More then 8 years"] + ["More then 10 years"], state="readonly", font=("Arial", 11))
     experience.pack(fill="x", ipady=3)
     experience.current(0)
 

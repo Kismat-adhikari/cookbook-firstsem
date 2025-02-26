@@ -23,13 +23,12 @@ def connect():
     except Error as e:
         print(e)
 
-def retrive_data(id):
+def retrive_data():
     global length_data
     connection = connect()
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM posts WHERE user_id = %s", (id,))
+    cursor.execute("SELECT * FROM posts")
     posts = cursor.fetchall()
-    length_data = len(posts)
     return posts
 
 
@@ -244,8 +243,7 @@ def _on_mousewheel(event):
 canvas.bind_all("<MouseWheel>", _on_mousewheel)
 
 # Get the posts from the database
-posts = retrive_data(1)
-print(len(posts))
+posts = retrive_data()
 for post in posts:
     post_id, name, detail, image, category, tags, duration, ingredient, rating, user_id = post
     # Create posts inside the scrollable frame

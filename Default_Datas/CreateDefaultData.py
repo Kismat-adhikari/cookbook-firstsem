@@ -24,7 +24,7 @@ def connection_create():
                             email VARCHAR(100) NOT NULL,
                             age INT NOT NULL,
                             cook_type VARCHAR(50),
-                            experience int,
+                            experience VARCHAR(50),
                             profile_pic LONGBLOB,
                             bio TEXT
                             )''')
