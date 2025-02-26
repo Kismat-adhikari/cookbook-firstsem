@@ -37,6 +37,8 @@ root.title("Taste Tracker | Food Social Media")
 root.configure(bg="#f0f2f5")  # Facebook-like background
 root.state("zoomed")  # Make window full screen
 
+
+
 # Modern color scheme
 BG_COLOR = "#ffffff"
 TEXT_COLOR = "#1c1e21"
@@ -129,18 +131,18 @@ def create_post(parent, title, author, description, image, category, tags, durat
     left_details = tk.Frame(details_frame, bg=BG_COLOR)
     left_details.pack(side="left", fill="y", anchor="w")
     
-    category_label = tk.Label(left_details, text="🍽️ Italian Cuisine", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+    category_label = tk.Label(left_details, text=f"🍽️ {category}", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
     category_label.pack(anchor="w", pady=3)
     
-    prep_label = tk.Label(left_details, text="⏱️ Prep: 15 min | Cook: 25 min", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+    prep_label = tk.Label(left_details, text=f"⏱️ {duration} min", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
     prep_label.pack(anchor="w", pady=3)
     
     # Right column
     right_details = tk.Frame(details_frame, bg=BG_COLOR)
     right_details.pack(side="right", fill="y", anchor="e")
     
-    difficulty_label = tk.Label(right_details, text="👨‍🍳 Difficulty: Easy", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
-    difficulty_label.pack(anchor="e", pady=3)
+    rating_label = tk.Label(right_details, text=f" Rating: {rating}/5", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+    rating_label.pack(anchor="e", pady=3)
     
     servings_label = tk.Label(right_details, text="🍴 Serves: 4 people", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
     servings_label.pack(anchor="e", pady=3)
@@ -150,7 +152,7 @@ def create_post(parent, title, author, description, image, category, tags, durat
     tags_frame.pack(fill="x", pady=(10, 0))
     
     # Create styled tag buttons
-    tags = ["Italian", "Pasta", "Dinner", "Vegetarian"]
+    tags = tags.split(",")
     for tag in tags:
         tag_btn = tk.Label(tags_frame, text=f"#{tag}", font=("Segoe UI", 10), 
                           fg=ACCENT_COLOR, bg=f"#ffebee", padx=8, pady=2)
@@ -225,8 +227,15 @@ canvas.configure(yscrollcommand=scrollbar.set)
 canvas.pack(side="left", fill="both", expand=True)
 scrollbar.pack(side="right", fill="y")
 
+# enable mousewheel scrolling
+def _on_mousewheel(event):
+    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    
+canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
 # Get the posts from the database
 posts = retrive_data(1)
+print(len(posts))
 for post in posts:
     post_id, name, detail, image, category, tags, duration, ingredient, rating, user_id = post
     # Create posts inside the scrollable frame
