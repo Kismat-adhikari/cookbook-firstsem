@@ -5,8 +5,10 @@ from mysql.connector import Error
 from PIL import Image, ImageTk, ImageDraw, ImageOps
 import sys
 import io
+import os
 
 main_id = None
+
 # Connect to MySQL database
 def connect():
     connection = mysql.connector.connect(
@@ -43,35 +45,49 @@ def display_profile(id):
             global main_id
             main_id = user_id
 
-            # to make profile image a circular with border(designs)
+            # Improved profile picture processing
             image = Image.open(io.BytesIO(profilePic)).convert("RGBA")
+            
+            # Resize image to a square while maintaining aspect ratio
             image.thumbnail((300, 300), Image.Resampling.LANCZOS)
+            
+            # Create a new square background
+            background = Image.new('RGBA', (300, 300), (0, 0, 0, 0))
+            
+            # Calculate position to center the image
+            offset = ((300 - image.width) // 2, (300 - image.height) // 2)
+            
+            # Paste the image onto the background
+            background.paste(image, offset, image)
 
-            mask = Image.new("L", image.size, 0)
+            # Create circular mask
+            mask = Image.new("L", (300, 300), 0)
             draw = ImageDraw.Draw(mask)
-            draw.ellipse((0, 0, image.size[0], image.size[1]), fill=255)
+            draw.ellipse((0, 0, 300, 300), fill=255)
 
-            image = ImageOps.fit(image, mask.size, centering=(0.5, 0.5))
-            image.putalpha(mask)
+            # Apply mask to create circular image
+            output = Image.new("RGBA", (300, 300), (0, 0, 0, 0))
+            output.paste(background, (0, 0), mask)
 
-            border_size = 10
-            border_image = Image.new("RGBA", (image.size[0] + border_size, image.size[1] + border_size), (244, 100, 100, 255))
-            border_image.paste(image, (border_size // 2, border_size // 2), image)
+            # Add a border
+            border_color = (244, 100, 100, 255)  # Reddish border
+            border_width = 10
+            bordered_image = Image.new("RGBA", (320, 320), border_color)
+            bordered_image.paste(output, ((border_width, border_width)), output)
 
-            img_tk = ImageTk.PhotoImage(border_image)
+            img_tk = ImageTk.PhotoImage(bordered_image)
             label_image.config(image=img_tk)
             label_image.image = img_tk
             
             #label the vaiables and config data
-            label_user_id.config(text="User ID: " +str(user_id))
-            label_user_id.config(text="Username: " + str(username))
+            label_user_id.config(text="Username: " +str(username))
             label_name.config(text="Name: " + full_name)
             label_email.config(text="Email: " + email)
             label_age.config(text="Age: " + str(age))
             label_phone_number.config(text="Phone: " + phone_number)
             label_cooking_type.config(text="Cook Type: " + str(cooking_type))
             label_experience.config(text="Experience: " + str(experience))
-            label_bio.config(text="bio: "+ str(bio))
+            label_bio.config(text="Bio: "+ str(bio))
             cursor.close()
             connection.close()
     except Error as e:
@@ -85,61 +101,55 @@ def display_posts(id):
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM posts WHERE user_id = %s", (id,))
         posts = cursor.fetchall()
+        
         for post in posts:
-                print(post)
-        for post in posts:
-            # Create the card container
-            card = tk.Frame(frame, bg=BG_COLOR, padx=15, pady=15, relief="ridge", bd=2)
-            card.grid(row=1, column=0, pady=5)
+            # Create the card container with improved styling
+            card = tk.Frame(posts_frame, bg="#1c1c1c", padx=20, pady=20, relief="raised", bd=1)
+            card.pack(fill="x", pady=10)
 
             # Title of the food item
-            title_label = tk.Label(card, text=post[0], font=TITLE_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
-            title_label.pack(anchor="w", pady=(5, 2))
+            title_label = tk.Label(card, text=post[0], font=("Segoe UI", 16, "bold"), fg="#ffffff", bg="#1c1c1c")
+            title_label.pack(anchor="w", pady=(0, 10))
 
-            # Load and display the image below the title
-            image = Image.open("testimage.jpeg")
-            image = image.resize((100, 100))  # Resize the image as needed
-            photo = ImageTk.PhotoImage(image)
-            image_label = tk.Label(card, image=photo, bg=BG_COLOR)
-            image_label.pack(anchor="center", pady=(5, 10))
+            # Load and display the image from the database
+            try:
+                post_image = Image.open(io.BytesIO(post[2])).convert("RGBA")
+                post_image = post_image.resize((200, 200), Image.Resampling.LANCZOS)
+                photo = ImageTk.PhotoImage(post_image)
+                image_label = tk.Label(card, image=photo, bg="#1c1c1c")
+                image_label.image = photo  # Keep a reference
+                image_label.pack(anchor="center", pady=(0, 10))
+            except Exception as e:
+                print(f"Error loading image: {e}")
+                # Display a placeholder image if the image cannot be loaded
+                placeholder = Image.new('RGBA', (200, 200), (255, 255, 255, 0))
+                photo = ImageTk.PhotoImage(placeholder)
+                image_label = tk.Label(card, image=photo, bg="#1c1c1c")
+                image_label.image = photo
+                image_label.pack(anchor="center", pady=(0, 10))
 
-            # Category label
-            category_label = tk.Label(card, text="Category: Main Course", font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+            # Additional details in a more organized layout
+            details_frame = tk.Frame(card, bg="#1c1c1c")
+            details_frame.pack(fill="x", pady=(0, 10))
+
+            category_label = tk.Label(details_frame, text="Category: Main Course", font=("Segoe UI", 12), fg="#ffffff", bg="#1c1c1c")
             category_label.pack(anchor="w")
 
-            # Rating label
-            rating_label = tk.Label(card, text="⭐ ⭐ ⭐ ⭐ ☆  (4/5)", font=ICON_FONT, fg="#FFD700", bg=BG_COLOR)
+            rating_label = tk.Label(details_frame, text="⭐ ⭐ ⭐ ⭐ ☆  (4/5)", font=("Segoe UI", 12), fg="#FFD700", bg="#1c1c1c")
             rating_label.pack(anchor="w")
 
-            # Duration label
-            duration_label = tk.Label(card, text="⏳ Duration: 30 min", font=ICON_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+            duration_label = tk.Label(details_frame, text="⏳ Duration: 30 min", font=("Segoe UI", 12), fg="#ffffff", bg="#1c1c1c")
             duration_label.pack(anchor="w")
 
-            # Tags label
-            tags_label = tk.Label(card, text="🏷 Tags: Italian, Pasta", font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+            tags_label = tk.Label(details_frame, text="🏷 Tags: Italian, Pasta", font=("Segoe UI", 12), fg="#ffffff", bg="#1c1c1c")
             tags_label.pack(anchor="w")
 
-            # Description label
             desc_label = tk.Label(card, text="A classic spaghetti dish with tomato sauce, garlic, olive oil, and fresh herbs. Simple, delicious, and perfect for any occasion.",
-                                wraplength=400, font=DESC_FONT, fg=TEXT_COLOR, bg=BG_COLOR, justify="left")
-            desc_label.pack(anchor="w", pady=(5, 10))
+                                wraplength=500, font=("Segoe UI", 12), fg="#ffffff", bg="#1c1c1c", justify="left")
+            desc_label.pack(anchor="w", pady=(10, 0))
 
-            # Uploaded by label, now inside the container
-            username_label = tk.Label(card, text="Uploaded by: Kathy", font=USERNAME_FONT, fg="#f46464", bg=BG_COLOR)
-            username_label.pack(anchor="w")
-
-            # Like button functionality
-            def toggle_like():
-                if like_btn["text"] == "❤ Like":
-                    like_btn["text"] = "💔 Unlike"
-                else:
-                    like_btn["text"] = "❤ Like"
-
-            # Like button
-            like_btn = tk.Button(card, text="❤ Like", font=ICON_FONT, fg="#f46464", bg=BG_COLOR, bd=0, command=toggle_like)
-            like_btn.pack(anchor="center", pady=(5, 0))
     except Error as e:
-        print(f"Error :{e}")
+        print(f"Error: {e}")
         messagebox.showerror("Error", "Could not load profile Information.")
     finally:
         if cursor:
@@ -147,21 +157,52 @@ def display_posts(id):
         if connection:
             connection.close()
 
+# Navbar function
+def open_feed():
+    root.destroy()
+    os.system(f'python {os.path.join(os.path.dirname(__file__), "feed.py")} {main_id}')
+
+def open_posting():
+    root.destroy()
+    os.system(f'python {os.path.join(os.path.dirname(__file__), "posting.py")} {main_id}')
+
+def logout():
+    root.destroy()
+    os.system(f'python {os.path.join(os.path.dirname(__file__), "logintest.py")}')
+
 # main root
 root = tk.Tk()
 root.title("User Profile")
 root.config(bg="#1c1c1c")
 
-# Main Frame
-main_frame = tk.Frame(root, bg="#1c1c1c")
+# Navbar Frame
+navbar_frame = tk.Frame(root, bg="#262626", height=50)
+navbar_frame.pack(fill="x")
+navbar_frame.pack_propagate(False)  # Prevent frame from shrinking
+
+# Navbar Buttons
+feed_btn = tk.Button(navbar_frame, text="Feed", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", bd=0, command=open_feed)
+feed_btn.pack(side="left", padx=20, pady=10)
+
+posting_btn = tk.Button(navbar_frame, text="Posting", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", bd=0, command=open_posting)
+posting_btn.pack(side="left", padx=20, pady=10)
+
+profile_btn = tk.Button(navbar_frame, text="Profile", font=("Segoe UI", 12), bg="#f46464", fg="#ffffff", bd=0)
+profile_btn.pack(side="left", padx=20, pady=10)
+
+logout_btn = tk.Button(navbar_frame, text="Logout", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", bd=0, command=logout)
+logout_btn.pack(side="right", padx=20, pady=10)
+
+# Main Frame with improved padding
+main_frame = tk.Frame(root, bg="#1c1c1c", padx=20, pady=20)
 main_frame.pack(expand=True, fill="both")
 
-# Title Label
-title_label = tk.Label(main_frame, text="User Profile", font=("Helvetica", 24, "bold"), bg="#f46464", fg="white", padx=10, pady=10)
-title_label.pack(fill="x")
+# Title Label with more padding and centered
+title_label = tk.Label(main_frame, text="User Profile", font=("Segoe UI", 24, "bold"), bg="#f46464", fg="#ffffff", padx=20, pady=15)
+title_label.pack(fill="x", pady=(0, 20))
 
 # Create a canvas with scrollbar for scrolling
-canvas = tk.Canvas(main_frame, bg="#1c1c1c")
+canvas = tk.Canvas(main_frame, bg="#1c1c1c", highlightthickness=0)
 scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
 
 # Configure the scrollable frame
@@ -178,57 +219,49 @@ canvas.configure(yscrollcommand=scrollbar.set)
 canvas.pack(side="left", fill="both", expand=True)
 scrollbar.pack(side="right", fill="y")
 
-# Configure canvas to expand with the window
-# main_frame.bind("<Configure>", lambda e: canvas.configure(width=e.width-20))
+# Frame for user info with improved styling
+user_info_frame = tk.Frame(scrollable_frame, bg="#262626", padx=30, pady=30, relief="flat")
+user_info_frame.pack(fill="x", expand=True, padx=20, pady=10)
 
-# Frame for user info
-frame = tk.Frame(scrollable_frame, bg="#262626", padx=20, pady=20, relief="ridge", borderwidth=1)
-frame.pack(fill="x",expand=True)
+# Configure grid weights to make the details column wider
+user_info_frame.columnconfigure(0, weight=1)  # Profile picture column
+user_info_frame.columnconfigure(1, weight=3)  # User details column
 
+# Profile picture with border
+label_image = tk.Label(user_info_frame, bg="#1c1c1c", relief="solid", bd=2)
+label_image.grid(row=0, column=0, rowspan=8, padx=(0, 30), sticky="nsew")
 
-# profile picture with border
-label_image = tk.Label(frame, bg="#1c1c1c", relief="solid", bd=2)
-label_image.grid(row=0, column=0, rowspan=5, padx=30)
+# User info labels with improved alignment and styling
+label_user_id = tk.Label(user_info_frame, text="Username: ", font=("Segoe UI", 16, "bold"), bg="#262626", fg="#ffffff", anchor="w")
+label_user_id.grid(row=0, column=1, pady=5, sticky="w", padx=(20, 0))
 
-label_user_id = tk.Label(frame, text="Username: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
-label_user_id.grid(row=0, column=3, pady=5, padx=600)
+label_name = tk.Label(user_info_frame, text="Name: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w")
+label_name.grid(row=1, column=1, pady=5, sticky="w", padx=(20, 0))
 
-label_name = tk.Label(frame, text="Name: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
-label_name.grid(row=1, column=3, pady=5)
+label_email = tk.Label(user_info_frame, text="Email: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w")
+label_email.grid(row=2, column=1, pady=5, sticky="w", padx=(20, 0))
 
-label_email = tk.Label(frame, text="Email: ", font=("Arial", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
-label_email.grid(row=2, column=3, pady=5)
+label_age = tk.Label(user_info_frame, text="Age: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w")
+label_age.grid(row=3, column=1, pady=5, sticky="w", padx=(20, 0))
 
-label_age = tk.Label(frame, text="Age: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
-label_age.grid(row=3, column=3, pady=5)
+label_phone_number = tk.Label(user_info_frame, text="Phone: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w")
+label_phone_number.grid(row=4, column=1, pady=5, sticky="w", padx=(20, 0))
 
-label_phone_number = tk.Label(frame, text="Phone: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
-label_phone_number.grid(row=4, column=3, pady=5)
+label_cooking_type = tk.Label(user_info_frame, text="Cook Type: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w")
+label_cooking_type.grid(row=5, column=1, pady=5, sticky="w", padx=(20, 0))
 
-label_cooking_type = tk.Label(frame, text="Cook Type: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
-label_cooking_type.grid(row=5, column=3, pady=5)
+label_experience = tk.Label(user_info_frame, text="Experience: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w")
+label_experience.grid(row=6, column=1, pady=5, sticky="w", padx=(20, 0))
 
-label_experience = tk.Label(frame, text="Experience: ", font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
-label_experience.grid(row=6, column=3, pady=5)
+label_bio = tk.Label(user_info_frame, text="Bio: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w")
+label_bio.grid(row=7, column=1, pady=5, sticky="w", padx=(20, 0))
 
-label_bio = tk.Label(frame,text="bio: ",font=("Helvetica", 16), bg="#262626", fg="#ffffff", anchor="center",width=30)
-label_bio.grid(row=7, column=3, pady=5)
+# Posts frame with improved styling
+posts_frame = tk.Frame(scrollable_frame, bg="#262626", padx=30, pady=30, relief="flat")
+posts_frame.pack(fill="x", expand=True, padx=20, pady=10)
 
-#frame for user posts
-frame = tk.Frame(scrollable_frame, bg="#262626", padx=20, pady=20, relief="ridge", borderwidth=1)
-frame.pack(fill="x")
-posts_label = tk.Label(frame, text="User Posts:-", font=("Helvetica", 16, "bold"), bg="#262626", fg="#f46464", anchor="center",width=30)
-posts_label.grid(row=0, column=0, pady=5)
-
-# Create a card container
-BG_COLOR = "#262626"
-TEXT_COLOR = "#ffffff"
-TITLE_FONT = ("Arial", 14, "bold")
-DESC_FONT = ("Arial", 10)
-ICON_FONT = ("Arial", 12)
-USERNAME_FONT = ("Arial", 10, "italic")
-
-
+posts_label = tk.Label(posts_frame, text="User Posts", font=("Segoe UI", 16, "bold"), bg="#262626", fg="#f46464", anchor="w")
+posts_label.pack(pady=(0, 20), anchor="w")
 
 # Enable mousewheel scrolling
 def _on_mousewheel(event):

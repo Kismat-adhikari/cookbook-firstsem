@@ -4,6 +4,8 @@ from tkinter import ttk
 import mysql.connector
 from mysql.connector import Error
 import io
+import os
+import sys
 
 length_data = 0
 
@@ -31,19 +33,14 @@ def retrive_data(id):
     return posts
 
 
-# Initialize the main window
-root = tk.Tk()
-root.title("Taste Tracker | Food Social Media")
-root.configure(bg="#f0f2f5")  # Facebook-like background
-root.state("zoomed")  # Make window full screen
-
-
-
 # Modern color scheme
+BG_DARK = "#1c1c1c"
+BG_MEDIUM = "#262626"
 BG_COLOR = "#ffffff"
-TEXT_COLOR = "#1c1e21"
-ACCENT_COLOR = "#e41e3f"  # Food-themed red
+ACCENT_COLOR = "#f46464"
+TEXT_COLOR = "#ffffff"
 SECONDARY_COLOR = "#65676b"
+LABEL_FONT = ("Segoe UI", 12)
 
 # Font configuration
 TITLE_FONT = ("Segoe UI", 22, "bold")
@@ -51,37 +48,97 @@ SUBTITLE_FONT = ("Segoe UI", 14)
 BODY_FONT = ("Segoe UI", 11)
 ICON_FONT = ("Segoe UI", 12)
 
+# Navigation functions
+def open_feed():
+    try:
+        user_id = sys.argv[1] if len(sys.argv) > 1 else '1'  # Default to user ID 1
+        root.destroy()
+        os.system(f'python {os.path.join(os.path.dirname(__file__), "feed.py")} {user_id}')
+    except Exception as e:
+        print(f"Error opening feed: {e}")
+
+
+def open_posting():
+    try:
+        user_id = sys.argv[1] if len(sys.argv) > 1 else '1'  # Default to user ID 1
+        root.destroy()
+        os.system(f'python {os.path.join(os.path.dirname(__file__), "posting.py")} {user_id}')
+    except Exception as e:
+        print(f"Error opening posting: {e}")
+
+
+def open_profile():
+    try:
+        user_id = sys.argv[1] if len(sys.argv) > 1 else '1'  # Default to user ID 1
+        root.destroy()
+        os.system(f'python {os.path.join(os.path.dirname(__file__), "user_profile.py")} {user_id}')
+    except Exception as e:
+        print(f"Error opening profile: {e}")
+
+
+def logout():
+    try:
+        root.destroy()
+        os.system(f'python {os.path.join(os.path.dirname(__file__), "logintest.py")}')
+    except Exception as e:
+        print(f"Error logging out: {e}")
+
+
+# Initialize the main window
+root = tk.Tk()
+root.title("Taste Tracker | Food Social Media")
+root.configure(bg=BG_DARK)
+root.state("zoomed")  # Make window full screen
+
+# Navbar Frame
+navbar_frame = tk.Frame(root, bg=BG_MEDIUM, height=50)
+navbar_frame.pack(fill="x")
+navbar_frame.pack_propagate(False)  # Prevent frame from shrinking
+
+# Navbar Buttons
+feed_btn = tk.Button(navbar_frame, text="Feed", font=LABEL_FONT, bg=ACCENT_COLOR, fg=TEXT_COLOR, bd=0, command=open_feed)
+feed_btn.pack(side="left", padx=20, pady=10)
+
+posting_btn = tk.Button(navbar_frame, text="Posting", font=LABEL_FONT, bg=BG_MEDIUM, fg=TEXT_COLOR, bd=0, command=open_posting)
+posting_btn.pack(side="left", padx=20, pady=10)
+
+profile_btn = tk.Button(navbar_frame, text="Profile", font=LABEL_FONT, bg=BG_MEDIUM, fg=TEXT_COLOR, bd=0, command=open_profile)
+profile_btn.pack(side="left", padx=20, pady=10)
+
+logout_btn = tk.Button(navbar_frame, text="Logout", font=LABEL_FONT, bg=BG_MEDIUM, fg=TEXT_COLOR, bd=0, command=logout)
+logout_btn.pack(side="right", padx=20, pady=10)
+
 # Function to create a post
 def create_post(parent, title, author, description, image, category, tags, duration, ingredients, rating):
 
     # Create a card with better shadow effect
-    post_container = tk.Frame(parent, bg="#f0f2f5", padx=10, pady=10)
+    post_container = tk.Frame(parent, bg=BG_DARK, padx=10, pady=10)
     post_container.pack(fill="x")
     
-    main_frame = tk.Frame(post_container, bg=BG_COLOR, padx=0, pady=0)
+    main_frame = tk.Frame(post_container, bg=BG_MEDIUM, padx=0, pady=0)
     main_frame.pack(fill="x")
     
     # Add shadow effect with multiple frames for depth
     for i in range(3):
-        shadow = tk.Frame(post_container, bg=f"#{225-i*10:02x}{225-i*10:02x}{225-i*10:02x}")
+        shadow = tk.Frame(post_container, bg=f"#{20+i*10:02x}{20+i*10:02x}{20+i*10:02x}")
         shadow.place(in_=main_frame, relx=1+0.002*i, rely=1+0.002*i, 
                     anchor="se", relwidth=1, relheight=1)
     main_frame.lift()
     
     # Header with profile info
-    header_frame = tk.Frame(main_frame, bg=BG_COLOR, pady=8, padx=10)
+    header_frame = tk.Frame(main_frame, bg=BG_MEDIUM, pady=8, padx=10)
     header_frame.pack(fill="x")
     
-    profile_frame = tk.Frame(header_frame, bg=BG_COLOR)
+    profile_frame = tk.Frame(header_frame, bg=BG_MEDIUM)
     profile_frame.pack(side="left", anchor="w")
     
-    username_label = tk.Label(profile_frame, text=f"Chef {author}", font=SUBTITLE_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+    username_label = tk.Label(profile_frame, text=f"Chef {author}", font=SUBTITLE_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
     username_label.pack(anchor="w")
-    time_label = tk.Label(profile_frame, text="Posted 2 hours ago", font=("Segoe UI", 9), fg=SECONDARY_COLOR, bg=BG_COLOR)
+    time_label = tk.Label(profile_frame, text="Posted 2 hours ago", font=("Segoe UI", 9), fg="#a0a0a0", bg=BG_MEDIUM)
     time_label.pack(anchor="w")
     
     # Image with better aspect ratio and centering
-    image_frame = tk.Frame(main_frame, bg=BG_COLOR)
+    image_frame = tk.Frame(main_frame, bg=BG_MEDIUM)
     image_frame.pack(fill="x")
     
     try:
@@ -105,50 +162,50 @@ def create_post(parent, title, author, description, image, category, tags, durat
     photo = ImageTk.PhotoImage(image)
     
     # Create a container to center the image
-    image_container = tk.Frame(image_frame, bg=BG_COLOR, width=window_width, height=target_height)
+    image_container = tk.Frame(image_frame, bg=BG_MEDIUM, width=window_width, height=target_height)
     image_container.pack()
     image_container.pack_propagate(False)  # Don't shrink to image size
     
-    image_label = tk.Label(image_container, image=photo, bg=BG_COLOR)
+    image_label = tk.Label(image_container, image=photo, bg=BG_MEDIUM)
     image_label.image = photo  # Keep reference to prevent garbage collection
     image_label.place(relx=0.5, rely=0.5, anchor="center")  # Center image
     
     # Content section with improved layout
-    content_frame = tk.Frame(main_frame, bg=BG_COLOR, padx=10, pady=12)
+    content_frame = tk.Frame(main_frame, bg=BG_MEDIUM, padx=10, pady=12)
     content_frame.pack(fill="x")
     
-    food_name_label = tk.Label(content_frame, text=title, font=TITLE_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+    food_name_label = tk.Label(content_frame, text=title, font=TITLE_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
     food_name_label.pack(anchor="w")
     
-    desc_label = tk.Label(content_frame, text=description, wraplength=470, font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR, justify="left")
+    desc_label = tk.Label(content_frame, text=description, wraplength=470, font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM, justify="left")
     desc_label.pack(anchor="w", pady=(8, 12))
     
     # Details section with better icons and organization
-    details_frame = tk.Frame(content_frame, bg=BG_COLOR)
+    details_frame = tk.Frame(content_frame, bg=BG_MEDIUM)
     details_frame.pack(fill="x", pady=5)
     
     # Left column
-    left_details = tk.Frame(details_frame, bg=BG_COLOR)
+    left_details = tk.Frame(details_frame, bg=BG_MEDIUM)
     left_details.pack(side="left", fill="y", anchor="w")
     
-    category_label = tk.Label(left_details, text=f"🍽️ {category}", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+    category_label = tk.Label(left_details, text=f"🍽️ {category}", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
     category_label.pack(anchor="w", pady=3)
     
-    prep_label = tk.Label(left_details, text=f"⏱️ {duration} min", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+    prep_label = tk.Label(left_details, text=f"⏱️ {duration} min", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
     prep_label.pack(anchor="w", pady=3)
     
     # Right column
-    right_details = tk.Frame(details_frame, bg=BG_COLOR)
+    right_details = tk.Frame(details_frame, bg=BG_MEDIUM)
     right_details.pack(side="right", fill="y", anchor="e")
     
-    rating_label = tk.Label(right_details, text=f" Rating: {rating}/5", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+    rating_label = tk.Label(right_details, text=f" Rating: {rating}/5", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
     rating_label.pack(anchor="e", pady=3)
     
-    servings_label = tk.Label(right_details, text="🍴 Serves: 4 people", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_COLOR)
+    servings_label = tk.Label(right_details, text="🍴 Serves: 4 people", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
     servings_label.pack(anchor="e", pady=3)
     
     # Tags with better styling
-    tags_frame = tk.Frame(content_frame, bg=BG_COLOR)
+    tags_frame = tk.Frame(content_frame, bg=BG_MEDIUM)
     tags_frame.pack(fill="x", pady=(10, 0))
     
     # Create styled tag buttons
@@ -158,59 +215,12 @@ def create_post(parent, title, author, description, image, category, tags, durat
                           fg=ACCENT_COLOR, bg=f"#ffebee", padx=8, pady=2)
         tag_btn.pack(side="left", padx=(0, 8))
     
-    # Engagement section with counts
-    ttk.Separator(main_frame, orient='horizontal').pack(fill='x', padx=10, pady=15)
-    stats_frame = tk.Frame(main_frame, bg=BG_COLOR, padx=10)
-    stats_frame.pack(fill="x")
-    
-    likes_label = tk.Label(stats_frame, text="❤ 142 likes", font=BODY_FONT, fg=SECONDARY_COLOR, bg=BG_COLOR)
-    likes_label.pack(side="left", padx=(0, 15))
-    
-    comments_label = tk.Label(stats_frame, text="💬 24 comments", font=BODY_FONT, fg=SECONDARY_COLOR, bg=BG_COLOR)
-    comments_label.pack(side="left")
-    
-    ttk.Separator(main_frame, orient='horizontal').pack(fill='x', padx=10, pady=15)
-    
-    # Interaction buttons with better styling
-    buttons_frame = tk.Frame(main_frame, bg=BG_COLOR, padx=10, pady=10)
-    buttons_frame.pack(fill="x")
-    
-    # Like button functionality with closure to maintain state
-    def create_toggle_like(like_button, likes_count):
-        def toggle_like():
-            if like_button["text"] == "♡ Like":
-                like_button["text"] = "❤ Liked"
-                like_button["fg"] = ACCENT_COLOR
-                likes_count["text"] = f"❤ {likes_count} likes"
-            else:
-                like_button["text"] = "♡ Like"
-                like_button["fg"] = TEXT_COLOR
-                likes_count["text"] = f"❤ {likes_count} likes"
-        return toggle_like
-    
-    # Better styled buttons
-    like_btn = tk.Button(buttons_frame, text="♡ Like", font=BODY_FONT, fg=TEXT_COLOR, 
-                        bg=BG_COLOR, bd=0, padx=10, pady=5,
-                        activebackground="#f5f5f5")
-    like_btn["command"] = create_toggle_like(like_btn, likes_label)
-    like_btn.pack(side="left", padx=(0, 15))
-    
-    comment_btn = tk.Button(buttons_frame, text="💬 Comment", font=BODY_FONT, fg=TEXT_COLOR, 
-                          bg=BG_COLOR, bd=0, padx=10, pady=5,
-                          activebackground="#f5f5f5")
-    comment_btn.pack(side="left", padx=(0, 15))
-    
-    save_btn = tk.Button(buttons_frame, text="🔖 Save", font=BODY_FONT, fg=TEXT_COLOR, 
-                        bg=BG_COLOR, bd=0, padx=10, pady=5,
-                        activebackground="#f5f5f5")
-    save_btn.pack(side="left")
-    
     return main_frame
 
 # Create a canvas and scrollbar for the posts
-canvas = tk.Canvas(root, bg=BG_COLOR)
+canvas = tk.Canvas(root, bg=BG_DARK)
 scrollbar = ttk.Scrollbar(root, orient="vertical", command=canvas.yview)
-scrollable_frame = tk.Frame(canvas, bg=BG_COLOR)
+scrollable_frame = tk.Frame(canvas, bg=BG_DARK)
 
 # Configure the canvas
 scrollable_frame.bind(

@@ -3,13 +3,59 @@ from tkinter import ttk, filedialog, messagebox, scrolledtext
 from PIL import Image, ImageTk
 import mysql.connector
 import os
+import sys
 from datetime import datetime
+
+# Define colors for navbar
+BG_DARK = "#1c1c1c"
+BG_MEDIUM = "#262626"
+ACCENT_COLOR = "#f46464"
+TEXT_COLOR = "#ffffff"
+LABEL_FONT = ("Segoe UI", 12)
+
+# Navigation functions
+def open_feed():
+    root.destroy()
+    # Assuming you have a feed.py file in the same directory
+    os.system(f'python {os.path.join(os.path.dirname(__file__), "feed.py")} {sys.argv[1]}')
+
+def open_posting():
+    # Already on posting page, do nothing
+    pass
+
+def open_profile():
+    root.destroy()
+    # Assuming you have a user_profile.py file in the same directory
+    os.system(f'python {os.path.join(os.path.dirname(__file__), "user_profile.py")} {sys.argv[1]}')
+
+def logout():
+    root.destroy()
+    # Return to login page
+    os.system(f'python {os.path.join(os.path.dirname(__file__), "logintest.py")}')
 
 class ModernCookbookApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Gourmet Recipe Manager")
-        self.root.configure(bg="#f5f5f5")
+        self.root.configure(bg=BG_DARK)
+        
+        # Navbar Frame
+        self.navbar_frame = tk.Frame(self.root, bg=BG_MEDIUM, height=50)
+        self.navbar_frame.pack(fill="x")
+        self.navbar_frame.pack_propagate(False)  # Prevent frame from shrinking
+
+        # Navbar Buttons
+        self.feed_btn = tk.Button(self.navbar_frame, text="Feed", font=LABEL_FONT, bg=BG_MEDIUM, fg=TEXT_COLOR, bd=0, command=open_feed)
+        self.feed_btn.pack(side="left", padx=20, pady=10)
+
+        self.posting_btn = tk.Button(self.navbar_frame, text="Posting", font=LABEL_FONT, bg=ACCENT_COLOR, fg=TEXT_COLOR, bd=0)
+        self.posting_btn.pack(side="left", padx=20, pady=10)
+
+        self.profile_btn = tk.Button(self.navbar_frame, text="Profile", font=LABEL_FONT, bg=BG_MEDIUM, fg=TEXT_COLOR, bd=0, command=open_profile)
+        self.profile_btn.pack(side="left", padx=20, pady=10)
+
+        self.logout_btn = tk.Button(self.navbar_frame, text="Logout", font=LABEL_FONT, bg=BG_MEDIUM, fg=TEXT_COLOR, bd=0, command=logout)
+        self.logout_btn.pack(side="right", padx=20, pady=10)
         
         # Set app icon if available
         try:
@@ -32,36 +78,34 @@ class ModernCookbookApp:
         self.create_widgets()
         
     def create_scrollable_canvas(self):
-        # Create canvas with scrollbar
-        self.main_canvas = tk.Canvas(self.root, bg="#f5f5f5", highlightthickness=0)
-        self.scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=self.main_canvas.yview)
-        
-        # Configure canvas
-        self.main_canvas.configure(yscrollcommand=self.scrollbar.set)
-        
-        # Place canvas and scrollbar in grid
-        self.main_canvas.grid(row=0, column=0, sticky="nsew")
-        self.scrollbar.grid(row=0, column=1, sticky="ns")
-        
-        # Make the canvas expandable
-        self.root.grid_rowconfigure(0, weight=1)
-        self.root.grid_columnconfigure(0, weight=1)
-        
+        # Create canvas with scrollbar using pack instead of grid
+        self.canvas_frame = tk.Frame(self.root, bg=BG_DARK)
+        self.canvas_frame.pack(fill="both", expand=True)
+
+        self.scrollbar = ttk.Scrollbar(self.canvas_frame, orient="vertical")
+        self.scrollbar.pack(side="right", fill="y")
+
+        self.main_canvas = tk.Canvas(self.canvas_frame, bg=BG_DARK, highlightthickness=0, 
+                                     yscrollcommand=self.scrollbar.set)
+        self.main_canvas.pack(side="left", fill="both", expand=True)
+
+        self.scrollbar.config(command=self.main_canvas.yview)
+
         # Create frame inside canvas for content
-        self.scroll_frame = tk.Frame(self.main_canvas, bg="#f5f5f5")
-        self.canvas_frame = self.main_canvas.create_window(
-            (0, 0), 
-            window=self.scroll_frame, 
-            anchor="nw",
-            tags="self.scroll_frame"
+        self.scroll_frame = tk.Frame(self.main_canvas, bg=BG_DARK)
+        self.main_canvas.create_window((0, 0), window=self.scroll_frame, anchor="nw")
+
+        # Configure scrollregion
+        self.scroll_frame.bind(
+            "<Configure>", 
+            lambda e: self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all"))
         )
-        
-        # Configure scrolling
-        self.scroll_frame.bind("<Configure>", self.on_frame_configure)
-        self.main_canvas.bind("<Configure>", self.on_canvas_configure)
-        
+
         # Enable mousewheel scrolling
-        self.main_canvas.bind_all("<MouseWheel>", self.on_mousewheel)
+        def _on_mousewheel(event):
+            self.main_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+        self.main_canvas.bind_all("<MouseWheel>", _on_mousewheel)
     
     def on_frame_configure(self, event):
         # Reset the scroll region to encompass the inner frame
@@ -84,8 +128,8 @@ class ModernCookbookApp:
         # Combobox style
         self.style.configure(
             'TCombobox', 
-            fieldbackground='white',
-            background='white',
+            fieldbackground='#ff7676',
+            background='#ff7676',
             selectbackground='#FF7676',
             selectforeground='white'
         )
@@ -116,32 +160,32 @@ class ModernCookbookApp:
             
     def create_widgets(self):
         # Main container with padding
-        self.main_frame = tk.Frame(self.scroll_frame, bg="#f5f5f5", padx=20, pady=20)
+        self.main_frame = tk.Frame(self.scroll_frame, bg=BG_DARK, padx=20, pady=20)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
         
         # App header
-        self.title_frame = tk.Frame(self.main_frame, bg="#f5f5f5")
+        self.title_frame = tk.Frame(self.main_frame, bg=BG_DARK)
         self.title_frame.pack(fill=tk.X, pady=(0, 20))
         
         self.title_label = tk.Label(
             self.title_frame, 
             text="Gourmet Recipe Collection", 
             font=("Helvetica", 28, "bold"), 
-            bg="#f5f5f5", 
-            fg="#FF5252"
+            bg=BG_DARK, 
+            fg=ACCENT_COLOR
         )
         self.title_label.pack(pady=10)
         
         # Two-column layout
-        self.content_frame = tk.Frame(self.main_frame, bg="#f5f5f5")
+        self.content_frame = tk.Frame(self.main_frame, bg=BG_DARK)
         self.content_frame.pack(fill=tk.BOTH, expand=True)
         
         # Left column - Basic info
-        self.left_frame = tk.Frame(self.content_frame, bg="#f5f5f5", padx=10)
+        self.left_frame = tk.Frame(self.content_frame, bg=BG_DARK, padx=10)
         self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # Right column - Description, ingredients and image
-        self.right_frame = tk.Frame(self.content_frame, bg="#f5f5f5", padx=10)
+        self.right_frame = tk.Frame(self.content_frame, bg=BG_DARK, padx=10)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         
         # Create form fields
@@ -156,8 +200,8 @@ class ModernCookbookApp:
             self.left_frame, 
             text="Recipe Information", 
             font=("Helvetica", 14, "bold"), 
-            bg="#f5f5f5", 
-            fg="#333333",
+            bg=BG_DARK, 
+            fg=TEXT_COLOR,
             padx=15,
             pady=15
         )
@@ -168,8 +212,8 @@ class ModernCookbookApp:
             self.basic_info_frame, 
             text="Recipe Name", 
             font=("Helvetica", 12, "bold"), 
-            bg="#f5f5f5", 
-            fg="#333333"
+            bg=BG_DARK, 
+            fg=TEXT_COLOR
         )
         self.name_label.pack(anchor="w", pady=(0, 5))
         
@@ -187,8 +231,8 @@ class ModernCookbookApp:
             self.basic_info_frame, 
             text="Category", 
             font=("Helvetica", 12, "bold"), 
-            bg="#f5f5f5", 
-            fg="#333333"
+            bg=BG_DARK, 
+            fg=TEXT_COLOR
         )
         self.category_label.pack(anchor="w", pady=(0, 5))
         
@@ -208,8 +252,8 @@ class ModernCookbookApp:
             self.basic_info_frame, 
             text="Preparation Time (minutes)", 
             font=("Helvetica", 12, "bold"), 
-            bg="#f5f5f5", 
-            fg="#333333"
+            bg=BG_DARK, 
+            fg=TEXT_COLOR
         )
         self.duration_label.pack(anchor="w", pady=(0, 5))
         
@@ -228,12 +272,12 @@ class ModernCookbookApp:
             self.basic_info_frame, 
             text="Rating (1-5)", 
             font=("Helvetica", 12, "bold"), 
-            bg="#f5f5f5", 
-            fg="#333333"
+            bg=BG_DARK, 
+            fg=TEXT_COLOR
         )
         self.rating_label.pack(anchor="w", pady=(0, 5))
         
-        self.rating_frame = tk.Frame(self.basic_info_frame, bg="#f5f5f5")
+        self.rating_frame = tk.Frame(self.basic_info_frame, bg=BG_DARK)
         self.rating_frame.pack(fill=tk.X, pady=(0, 15))
         
         self.rating_var = tk.IntVar()
@@ -248,11 +292,11 @@ class ModernCookbookApp:
                 value=i+1, 
                 indicatoron=0, 
                 font=("Helvetica", 16), 
-                bg="#f5f5f5", 
+                bg=BG_DARK, 
                 fg="#999999", 
-                activebackground="#f5f5f5", 
-                activeforeground="#FF5252",
-                selectcolor="#f5f5f5",
+                activebackground=BG_DARK, 
+                activeforeground=ACCENT_COLOR,
+                selectcolor=BG_DARK,
                 bd=0, 
                 highlightthickness=0,
                 command=self.update_stars
@@ -264,8 +308,8 @@ class ModernCookbookApp:
             self.basic_info_frame, 
             text="Tags (comma separated)", 
             font=("Helvetica", 12, "bold"), 
-            bg="#f5f5f5", 
-            fg="#333333"
+            bg=BG_DARK, 
+            fg=TEXT_COLOR
         )
         self.tags_label.pack(anchor="w", pady=(0, 5))
         
@@ -283,8 +327,8 @@ class ModernCookbookApp:
             self.right_frame, 
             text="Recipe Details", 
             font=("Helvetica", 14, "bold"), 
-            bg="#f5f5f5", 
-            fg="#333333",
+            bg=BG_DARK, 
+            fg=TEXT_COLOR,
             padx=15,
             pady=15
         )
@@ -295,8 +339,8 @@ class ModernCookbookApp:
             self.description_frame, 
             text="Description", 
             font=("Helvetica", 12, "bold"), 
-            bg="#f5f5f5", 
-            fg="#333333"
+            bg=BG_DARK, 
+            fg=TEXT_COLOR
         )
         self.description_label.pack(anchor="w", pady=(0, 5))
         
@@ -315,8 +359,8 @@ class ModernCookbookApp:
             self.description_frame, 
             text="Ingredients (one per line)", 
             font=("Helvetica", 12, "bold"), 
-            bg="#f5f5f5", 
-            fg="#333333"
+            bg=BG_DARK, 
+            fg=TEXT_COLOR
         )
         self.ingredient_label.pack(anchor="w", pady=(0, 5))
         
@@ -336,8 +380,8 @@ class ModernCookbookApp:
             self.left_frame, 
             text="Recipe Image", 
             font=("Helvetica", 14, "bold"), 
-            bg="#f5f5f5", 
-            fg="#333333",
+            bg=BG_DARK, 
+            fg=TEXT_COLOR,
             padx=15,
             pady=15
         )
@@ -363,7 +407,7 @@ class ModernCookbookApp:
         self.image_preview.pack(fill=tk.BOTH, expand=True)
         
         # Button container
-        self.image_button_frame = tk.Frame(self.image_frame, bg="#f5f5f5")
+        self.image_button_frame = tk.Frame(self.image_frame, bg=BG_DARK)
         self.image_button_frame.pack(fill=tk.X, pady=5)
         
         # Image button
@@ -372,7 +416,7 @@ class ModernCookbookApp:
             text="Select Image", 
             command=self.upload_image, 
             font=("Helvetica", 12), 
-            bg="#FF5252", 
+            bg=ACCENT_COLOR, 
             fg="white", 
             activebackground="#FF7676", 
             activeforeground="white",
@@ -385,7 +429,7 @@ class ModernCookbookApp:
         
     def create_action_buttons(self):
         # Buttons frame
-        self.button_frame = tk.Frame(self.main_frame, bg="#f5f5f5", pady=15)
+        self.button_frame = tk.Frame(self.main_frame, bg=BG_DARK, pady=15)
         self.button_frame.pack(fill=tk.X)
         
         # Clear button
@@ -411,7 +455,7 @@ class ModernCookbookApp:
             text="Save Recipe", 
             command=self.insert_data, 
             font=("Helvetica", 14, "bold"), 
-            bg="#FF5252", 
+            bg=ACCENT_COLOR, 
             fg="white", 
             activebackground="#FF7676", 
             activeforeground="white",
@@ -440,7 +484,7 @@ class ModernCookbookApp:
         rating = self.rating_var.get()
         for i, widget in enumerate(self.rating_frame.winfo_children()):
             if i < rating:
-                widget.config(fg="#FF5252")  # Filled star
+                widget.config(fg=ACCENT_COLOR)  # Filled star
             else:
                 widget.config(fg="#999999")  # Empty star
     
@@ -613,6 +657,5 @@ class ModernCookbookApp:
 if __name__ == "__main__":
     root = tk.Tk()
     root.state("zoomed")  # Maximize the window
-    root.geometry("1000x800")  # Set initial window size
     app = ModernCookbookApp(root)
     root.mainloop()
