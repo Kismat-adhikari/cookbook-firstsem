@@ -130,43 +130,58 @@ def switch_to_signup():
     for widget in main_frame.winfo_children():
         widget.destroy()
 
-    # Create a canvas with scrollbar for scrolling
+    # Configure main frame
+    main_frame.configure(bg="#1c1c1c")
+
+    # Create a scrollable frame
     canvas = tk.Canvas(main_frame, bg="#1c1c1c")
     scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
     
-    # Configure the scrollable frame
-    scrollable_frame = tk.Frame(canvas, bg="#1c1c1c")
-    scrollable_frame.bind(
-        "<Configure>",
-        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-    )
+    # Create a frame that will contain the signup content
+    content_frame = tk.Frame(canvas, bg="#1c1c1c")
     
-    # Create a window inside the canvas to hold the scrollable frame
-    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    # Configure scrolling
+    def configure_scroll_region(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+    
+    content_frame.bind("<Configure>", configure_scroll_region)
+    
+    # Create a window inside the canvas to hold content
+    canvas_window = canvas.create_window((0, 0), window=content_frame, anchor="nw")
+    
+    # Configure canvas to fill width of main frame
+    def configure_canvas_width(event):
+        canvas_width = event.width - scrollbar.winfo_width()
+        canvas.itemconfig(canvas_window, width=canvas_width)
+    
+    main_frame.bind("<Configure>", configure_canvas_width)
+    
+    # Configure canvas scrolling
     canvas.configure(yscrollcommand=scrollbar.set)
     
-    # Pack the canvas and scrollbar
+    # Position canvas and scrollbar
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
     
-    # Configure canvas to expand with the window
-    main_frame.bind("<Configure>", lambda e: canvas.configure(width=e.width-20))  # 20 px for scrollbar
+    # Create signup container
+    signup_container = tk.Frame(content_frame, bg="#1c1c1c")
+    signup_container.pack(padx=500, pady=40, expand=True)
+    
+    # Create the main signup frame with border
+    signup_frame = tk.Frame(signup_container, bg="#1c1c1c", bd=1, relief="solid")
+    signup_frame.pack(fill="both", expand=True)
 
-    # Create a frame with padding and border for better visibility
-    signup_frame = tk.Frame(scrollable_frame, bg="#1c1c1c", bd=1, relief="solid")
-    signup_frame.pack(padx=40, pady=40, fill="both", expand=True)
-
-    # Header with better spacing
+    # Header
     header_frame = tk.Frame(signup_frame, bg="#1c1c1c")
     header_frame.pack(fill="x", pady=20)
     
     tk.Label(header_frame, text="Create a New Account", font=("Arial", 24, "bold"), bg="#1c1c1c", fg="#f46464").pack()
 
-    # Create a container for form fields
+    # Form container
     form_frame = tk.Frame(signup_frame, bg="#1c1c1c")
     form_frame.pack(fill="both", expand=True, padx=30, pady=10)
 
-    # Fields with better spacing and alignment
+    # Fields container
     fields_frame = tk.Frame(form_frame, bg="#1c1c1c")
     fields_frame.pack(fill="both", expand=True)
 
@@ -207,10 +222,11 @@ def switch_to_signup():
             entry.config(show=show)
         entry.pack(fill="x", ipady=4)
         entries_right.append(entry)
-    error_label = tk.Label(signup_frame, text="", font=("Arial", 12), bg="#1c1c1c", fg="red")
-    error_label.pack(fill="x", pady=(5, 10))
     
     phone_entry, password_entry, confirm_password_entry = entries_right
+    
+    error_label = tk.Label(signup_frame, text="", font=("Arial", 12), bg="#1c1c1c", fg="red")
+    error_label.pack(fill="x", pady=(5, 10))
 
     # Experience dropdown
     exp_frame = tk.Frame(left_column, bg="#1c1c1c")
@@ -229,7 +245,7 @@ def switch_to_signup():
     cook_type = ttk.Combobox(cook_frame, values=["Vegetarian", "Non-Vegetarian", "Vegan", "Dessert Specialist"], state="readonly", font=("Arial", 11))
     cook_type.pack(fill="x", ipady=3)
 
-    # Profile picture section - Improved layout for bigger image
+    # Profile picture section
     pic_frame = tk.Frame(signup_frame, bg="#1c1c1c")
     pic_frame.pack(fill="x", padx=30, pady=10)
     
@@ -247,22 +263,21 @@ def switch_to_signup():
                                     bg="#f46464", fg="white", font=("Arial", 12), padx=10, pady=5)
     upload_photo_button.pack(pady=10)
     
-    # Right side - image preview (improved for actual pixel dimensions)
+    # Right side - image preview
     preview_section = tk.Frame(pic_content, bg="#1c1c1c")
     preview_section.pack(side="right", padx=(20, 0))
 
-    # Don't specify width/height in character units
     label_image = tk.Label(preview_section, bg="#333333", fg="white", text="Image Preview")
     label_image.pack(pady=10)
 
-    # Buttons section with better spacing
+    # Buttons section
     button_frame = tk.Frame(signup_frame, bg="#1c1c1c")
     button_frame.pack(fill="x", padx=30, pady=20)
     
     signup_button = tk.Button(button_frame, text="Sign Up", 
-                              command=lambda: store_data(fullname_entry, username_entry, email_entry, age_entry, 
-                                                         phone_entry, experience, cook_type, password_entry, confirm_password_entry, error_label),
-                              bg="#f46464", fg="white", font=("Arial", 14, "bold"), padx=15, pady=8)
+                             command=lambda: store_data(fullname_entry, username_entry, email_entry, age_entry, 
+                                                        phone_entry, experience, cook_type, password_entry, confirm_password_entry, error_label),
+                             bg="#f46464", fg="white", font=("Arial", 14, "bold"), padx=15, pady=8)
     signup_button.pack(fill="x", pady=(0, 10))
     
     login_button = tk.Button(button_frame, text="Back to Login", command=switch_to_login, 
@@ -340,6 +355,12 @@ root.state("zoomed")# do not change this line
 
 # Create main frame with better background
 main_frame = tk.Frame(root, bg="#1c1c1c")
+main_frame.pack(expand=True, fill="both")
+
+# Start with login screen
+switch_to_login()
+
+root.mainloop()
 main_frame.pack(expand=True, fill="both")
 
 # Start with login screen
