@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox,ttk
+from tkinter import messagebox, ttk, simpledialog, filedialog
 import mysql.connector
 from mysql.connector import Error
 from PIL import Image, ImageTk, ImageDraw, ImageOps
@@ -39,7 +39,7 @@ def display_profile(id):
             cooking_type = user[7]
             experience = user[8]
             profilePic = user[9]
-            bio = user[10]
+            bio = user[10] if user[10] is not None else "No bio available"
 
             # asgining main_id
             global main_id
@@ -87,11 +87,45 @@ def display_profile(id):
             label_phone_number.config(text="Phone: " + phone_number)
             label_cooking_type.config(text="Cook Type: " + str(cooking_type))
             label_experience.config(text="Experience: " + str(experience))
+            label_bio.config(text="Bio: " + bio)
             cursor.close()
             connection.close()
     except Error as e:
         print(f"Error :{e}")
         messagebox.showerror("Error", "Could not load profile Information.")
+
+def save_bio(id,bio_text):
+    bio_entry = bio_text.get("1.0", tk.END).strip()  # Get text from Text widget
+    if bio_text:
+        connection = connect()
+        cursor = connection.cursor()
+        cursor.execute("UPDATE profile SET bio = %s WHERE id = %s", (bio_entry, id))
+        connection.commit()
+        messagebox.showinfo("Success", "Bio saved successfully.")
+        display_profile(id)
+
+def open_edit_bio_popup():
+    global main_id
+    # Create a popup window for editing bio
+    popup = tk.Toplevel(root)
+    popup.title("Edit Bio")
+    popup.geometry("400x250")
+    popup.config(bg="#262626")
+    popup.resizable(False, False)  # Fixed size
+    
+    # Add a title to the popup
+    title_label = tk.Label(popup, text="Edit Your Bio", font=("Segoe UI", 16, "bold"), bg="#262626", fg="#ffffff", pady=10)
+    title_label.pack(fill="x")
+    
+    # Add a text field for bio input
+    bio_text = tk.Text(popup, height=5, width=40, font=("Segoe UI", 12), bg="#333333", fg="#ffffff", relief="flat")
+    bio_text.pack(padx=20, pady=10, fill="both", expand=True)
+    
+    # Add a save button
+    save_btn = tk.Button(popup, text="Save Bio",font=("Segoe UI", 12, "bold"), bg="#f46464", fg="#ffffff", 
+                        padx=20, pady=5, relief="flat", 
+                        command=lambda: save_bio(main_id, bio_text))  
+    save_btn.pack(pady=15)
 
 def display_posts(id):
 
@@ -117,7 +151,20 @@ def display_posts(id):
         posts = cursor.fetchall()
         return posts
 
-    def create_post(parent, title, author, description, image, category, tags, duration, ingredients, rating):
+    def delete_post(post_container, post_id):
+        if messagebox.askyesno("Delete Post", "Are you sure you want to delete this post?"):
+            
+            # Delete the post from the database
+            connection = connect()
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM posts WHERE id = %s", (post_id,))
+            connection.commit()
+            
+            # Destroy the post container
+            post_container.destroy()
+            messagebox.showinfo("Success", "Post deleted successfully")
+
+    def create_post(post_id, parent, title, author, description, image, category, tags, duration, ingredients, rating):
 
         # To get username
         connection = connect()
@@ -139,7 +186,7 @@ def display_posts(id):
                         anchor="se", relwidth=1, relheight=1)
         main_frame.lift()
         
-        # Header with profile info
+        # Header with profile info and delete button
         header_frame = tk.Frame(main_frame, bg=BG_MEDIUM, pady=8, padx=10)
         header_frame.pack(fill="x")
         
@@ -148,6 +195,11 @@ def display_posts(id):
         
         username_label = tk.Label(profile_frame, text=f"Chef {author}", font=SUBTITLE_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
         username_label.pack(anchor="w")
+
+        # Add delete button to header
+        delete_btn = tk.Button(header_frame, text="🗑", font=("Segoe UI", 14), bg=BG_MEDIUM, fg="#ff6b6b", bd=0,
+                             command=lambda: delete_post(post_container, post_id))
+        delete_btn.pack(side="right", padx=5)
         
         # Image with better aspect ratio and centering
         image_frame = tk.Frame(main_frame, bg=BG_MEDIUM)
@@ -200,10 +252,10 @@ def display_posts(id):
         left_details = tk.Frame(details_frame, bg=BG_MEDIUM)
         left_details.pack(side="left", fill="y", anchor="w")
         
-        category_label = tk.Label(left_details, text=f"🍽️ {category}", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
+        category_label = tk.Label(left_details, text=f"🍽 {category}", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
         category_label.pack(anchor="w", pady=3)
         
-        prep_label = tk.Label(left_details, text=f"⏱️ {duration} min", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
+        prep_label = tk.Label(left_details, text=f"⏱ {duration} min", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
         prep_label.pack(anchor="w", pady=3)
         
         # Right column
@@ -247,8 +299,7 @@ def display_posts(id):
         posts_label = tk.Label(posts_frame, text="User Posts", font=("Segoe UI", 16, "bold"), bg="#262626", fg="#f46464", anchor="w")
         posts_label.pack(pady=(0, 20), anchor="w")
 
-        create_post(posts_frame, name, user_id, detail, image, category, tags, duration, ingredient, rating)
-
+        create_post(post_id, posts_frame, name, user_id, detail, image, category, tags, duration, ingredient, rating)
 
 # Navbar function
 def open_feed():
@@ -261,7 +312,57 @@ def open_posting():
 
 def logout():
     root.destroy()
-    os.system(f'python {os.path.join(os.path.dirname(__file__), "logintest.py")}')
+    os.system(f'python logintest.py')
+
+def delete_profile():
+    connection = connect()
+    cursor = connection.cursor()
+    try:
+        # Delete profile from database
+        cursor.execute("use cookbook")
+        cursor.execute("DELETE FROM posts WHERE user_id = %s", (main_id,))
+        cursor.execute("DELETE FROM profile WHERE id = %s", (main_id,))
+        connection.commit()
+        messagebox.showinfo("Success", "Profile deleted successfully")
+    except Error as e:
+        print(f"Error: {e}")
+        messagebox.showerror("Error", "Failed to delete profile")
+    finally:
+        cursor.close()
+        connection.close()
+
+
+
+def update_profile_picture():
+    global main_id
+    # Open file dialog to select new profile picture
+    file_path = filedialog.askopenfilename(
+        title="Select Profile Picture",
+        filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.webp")]
+    )
+    
+    if file_path:
+        try:
+            # Read and convert the new image
+            with open(file_path, 'rb') as file:
+                new_image = file.read()
+            
+            # Update profile picture in database
+            connection = connect()
+            cursor = connection.cursor()
+            cursor.execute("use cookbook")
+            cursor.execute("UPDATE profile SET profile_pic = %s WHERE id = %s", (new_image, main_id))
+            connection.commit()
+            
+            # Refresh profile display
+            display_profile(main_id)
+            messagebox.showinfo("Success", "Profile picture updated successfully")
+        except Error as e:
+            print(f"Error: {e}")
+            messagebox.showerror("Error", "Failed to update profile picture")
+        finally:
+            cursor.close()
+            connection.close()
 
 # main root
 root = tk.Tk()
@@ -322,7 +423,7 @@ user_info_frame.columnconfigure(1, weight=3)  # User details column
 
 # Profile picture with border
 label_image = tk.Label(user_info_frame, bg="#1c1c1c", relief="solid", bd=2)
-label_image.grid(row=0, column=0, rowspan=8, padx=(0, 30), sticky="nsew")
+label_image.grid(row=0, column=0, rowspan=9, padx=(0, 30), sticky="nsew")
 
 # User info labels with improved alignment and styling
 label_user_id = tk.Label(user_info_frame, text="Username: ", font=("Segoe UI", 16, "bold"), bg="#262626", fg="#ffffff", anchor="w")
@@ -346,9 +447,22 @@ label_cooking_type.grid(row=5, column=1, pady=5, sticky="w", padx=(20, 0))
 label_experience = tk.Label(user_info_frame, text="Experience: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w")
 label_experience.grid(row=6, column=1, pady=5, sticky="w", padx=(20, 0))
 
+label_bio = tk.Label(user_info_frame, text="Bio: ", font=("Segoe UI", 12), bg="#262626", fg="#ffffff", anchor="w", wraplength=400)
+label_bio.grid(row=7, column=1, pady=5, sticky="w", padx=(20, 0))
 
+# Add Edit Bio button in the user info section
+edit_bio_btn = tk.Button(user_info_frame, text="Edit Bio", font=("Segoe UI", 11), bg="#f46464", fg="#ffffff", 
+                       padx=15, pady=5, bd=0, relief="flat", command=open_edit_bio_popup)
+edit_bio_btn.grid(row=8, column=1, pady=(10, 0), sticky="w", padx=(20, 0))
 
-    
+delete_profile_btn = tk.Button(user_info_frame, text="Delete Profile", font=("Segoe UI", 11), bg="#ff6b6b", fg="#ffffff", 
+                       padx=15, pady=5, bd=0, relief="flat", command=delete_profile)
+delete_profile_btn.grid(row=9, column=1, pady=(10, 0), sticky="w", padx=(20, 0))
+
+update_pfp_btn = tk.Button(user_info_frame, text="Update Profile Picture", font=("Segoe UI", 11), bg="#f46464", fg="#ffffff", 
+                       padx=15, pady=5, bd=0, relief="flat", command=update_profile_picture)
+update_pfp_btn.grid(row=10, column=1, pady=(10, 0), sticky="w", padx=(20, 0))
+
 # Enable mousewheel scrolling
 def _on_mousewheel(event):
     canvas.yview_scroll(int(-1*(event.delta/120)), "units")
