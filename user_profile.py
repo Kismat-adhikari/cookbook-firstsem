@@ -6,6 +6,7 @@ from PIL import Image, ImageTk, ImageDraw, ImageOps
 import sys
 import io
 import os
+import subprocess
 
 main_id = None
 
@@ -310,9 +311,15 @@ def open_posting():
     root.destroy()
     os.system(f'python {os.path.join(os.path.dirname(__file__), "posting.py")} {main_id}')
 
+# Fixed logout function
 def logout():
+    root.destroy()  # First destroy the current window
+    # Then start the login script as a separate process and exit the current process
+    python_executable = sys.executable 
+    subprocess.Popen([python_executable, 'login.py'])
+    sys.exit()  
     root.destroy()
-    os.system(f'python logintest.py')
+    subprocess.Popen(['python', 'login.py'])
 
 def delete_profile():
     connection = connect()
@@ -338,7 +345,7 @@ def update_profile_picture():
     # Open file dialog to select new profile picture
     file_path = filedialog.askopenfilename(
         title="Select Profile Picture",
-        filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.webp")]
+        filetypes=[("Image Files", ".png;.jpg;.jpeg;.gif;*.webp")]
     )
     
     if file_path:

@@ -5,6 +5,7 @@ import mysql.connector
 from mysql.connector import Error
 import io
 import os
+import subprocess
 import sys
 
 def connect():
@@ -70,12 +71,15 @@ def open_profile():
     except Exception as e:
         print(f"Error opening profile: {e}")
 
+# Fixed logout function
 def logout():
-    try:
-        root.destroy()
-        os.system(f'python {os.path.join(os.path.dirname(__file__), "logintest.py")}')
-    except Exception as e:
-        print(f"Error logging out: {e}")
+    root.destroy()  # First destroy the current window
+    # Then start the login script as a separate process and exit the current process
+    python_executable = sys.executable 
+    subprocess.Popen([python_executable, 'login.py'])
+    sys.exit()  
+    root.destroy()
+    subprocess.Popen(['python', 'login.py'])
 
 # Initialize the main window
 root = tk.Tk()
@@ -185,10 +189,10 @@ def create_post(parent, title, author, description, image, category, tags, durat
     left_details = tk.Frame(details_frame, bg=BG_MEDIUM)
     left_details.pack(side="left", fill="y", anchor="w")
     
-    category_label = tk.Label(left_details, text=f"🍽️ {category}", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
+    category_label = tk.Label(left_details, text=f"🍽 {category}", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
     category_label.pack(anchor="w", pady=3)
     
-    prep_label = tk.Label(left_details, text=f"⏱️ {duration} min", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
+    prep_label = tk.Label(left_details, text=f"⏱ {duration} min", font=BODY_FONT, fg=TEXT_COLOR, bg=BG_MEDIUM)
     prep_label.pack(anchor="w", pady=3)
     
     # Right column

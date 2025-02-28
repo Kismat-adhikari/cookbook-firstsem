@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 import mysql.connector
 import os
 import sys
+import subprocess
 from datetime import datetime
 
 # Define colors for navbar
@@ -28,13 +29,18 @@ def open_profile():
     # Assuming you have a user_profile.py file in the same directory
     os.system(f'python {os.path.join(os.path.dirname(__file__), "user_profile.py")} {sys.argv[1]}')
 
+# Fixed logout function
 def logout():
+    root.destroy()  # First destroy the current window
+    # Then start the login script as a separate process and exit the current process
+    python_executable = sys.executable 
+    subprocess.Popen([python_executable, 'login.py'])
+    sys.exit()  
     root.destroy()
-    # Return to login page
-    os.system(f'python {os.path.join(os.path.dirname(__file__), "logintest.py")}')
+    subprocess.Popen(['python', 'login.py'])
 
 class ModernCookbookApp:
-    def __init__(self, root):
+    def _init_(self, root):
         self.root = root
         self.root.title("Gourmet Recipe Manager")
         self.root.configure(bg=BG_DARK)
@@ -509,7 +515,7 @@ class ModernCookbookApp:
     
     def upload_image(self):
         file_path = filedialog.askopenfilename(
-            filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.webp")],
+            filetypes=[("Image Files", ".png;.jpg;.jpeg;.gif;*.webp")],
             title="Select Recipe Image"
         )
         
