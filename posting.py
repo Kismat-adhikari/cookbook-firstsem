@@ -40,7 +40,7 @@ def logout():
     subprocess.Popen(['python', 'login.py'])
 
 class ModernCookbookApp:
-    def _init_(self, root):
+    def __init__(self, root):
         self.root = root
         self.root.title("Gourmet Recipe Manager")
         self.root.configure(bg=BG_DARK)
