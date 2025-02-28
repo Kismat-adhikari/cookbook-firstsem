@@ -363,10 +363,6 @@ root.state("zoomed")# do not change this line
 main_frame = tk.Frame(root, bg="#1c1c1c")
 main_frame.pack(expand=True, fill="both")
 
-# Start with login screen
-switch_to_login()
-
-root.mainloop()
 main_frame.pack(expand=True, fill="both")
 
 # Start with login screen
